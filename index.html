@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PBIS Careers — Your Next Chapter Could Begin Here</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;600&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+:root{
+  --forest:#16302A;
+  --forest-deep:#0E211C;
+  --forest-2:#24443A;
+  --gold:#B68A4E;
+  --gold-soft:#D9BD8C;
+  --ivory:#F6F1E6;
+  --cream:#FBF8F1;
+  --charcoal:#211F1B;
+  --line: rgba(33,31,27,0.12);
+  --line-on-dark: rgba(246,241,230,0.16);
+  --radius: 2px;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Manrope', sans-serif;
+  color:var(--charcoal);
+  background:var(--cream);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3,h4{font-family:'Fraunces', serif; font-weight:500; letter-spacing:-0.01em; line-height:1.05;}
+.eyebrow{
+  font-family:'Space Grotesk', monospace;
+  font-size:12px; letter-spacing:0.16em; text-transform:uppercase;
+  color:var(--gold); font-weight:600;
+  display:flex; align-items:center; gap:10px;
+}
+.eyebrow::before{content:''; width:24px; height:1px; background:var(--gold);}
+a{color:inherit; text-decoration:none;}
+img{max-width:100%; display:block;}
+.wrap{max-width:1240px; margin:0 auto; padding:0 32px;}
+@media (max-width:640px){ .wrap{padding:0 20px;} }
+
+/* Chapter rail — signature element, ties to "chapter" tagline */
+.chapter-rail{
+  position:fixed; left:0; top:0; bottom:0; width:56px; z-index:50;
+  display:flex; flex-direction:column; align-items:center;
+  padding:28px 0; pointer-events:none; mix-blend-mode:difference;
+}
+.chapter-rail .track{position:relative; flex:1; width:1px; background:rgba(255,255,255,0.18); margin-top:8px;}
+.chapter-rail .fill{position:absolute; top:0; left:0; width:100%; height:0%; background:var(--gold-soft);}
+.chapter-rail .num{font-family:'Space Grotesk',monospace; font-size:11px; color:#fff; letter-spacing:0.1em; writing-mode:vertical-rl; transform:rotate(180deg);}
+@media (max-width:900px){ .chapter-rail{display:none;} }
+
+/* NAV */
+header.site-nav{
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  padding:22px 0; transition:all .4s ease;
+}
+header.site-nav.scrolled{ background:rgba(251,248,241,0.92); backdrop-filter:blur(10px); border-bottom:1px solid var(--line); padding:14px 0;}
+.nav-inner{display:flex; align-items:center; justify-content:space-between; max-width:1240px; margin:0 auto; padding:0 32px;}
+.brand{font-family:'Fraunces',serif; font-weight:600; font-size:21px; color:var(--forest);}
+header.site-nav:not(.scrolled) .brand, header.site-nav:not(.scrolled) .nav-links a{color:#fff;}
+.brand small{display:block; font-family:'Space Grotesk',monospace; font-size:9px; letter-spacing:.18em; color:var(--gold); font-weight:600; text-transform:uppercase;}
+.nav-links{display:flex; gap:34px; align-items:center;}
+.nav-links a{font-size:14px; font-weight:600; color:var(--charcoal); position:relative; padding:4px 0;}
+.nav-links a::after{content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background:var(--gold); transition:width .3s ease;}
+.nav-links a:hover::after{width:100%;}
+.nav-cta{display:flex; gap:10px;}
+@media (max-width:900px){ .nav-links{display:none;} }
+
+/* BUTTONS */
+.btn{
+  position:relative; display:inline-flex; align-items:center; gap:10px;
+  font-family:'Space Grotesk',monospace; font-size:13px; font-weight:600; letter-spacing:.03em;
+  padding:15px 26px; border-radius:var(--radius); cursor:pointer; border:1px solid transparent;
+  overflow:hidden; isolation:isolate; transition:transform .35s cubic-bezier(.2,.9,.2,1), box-shadow .35s ease;
+  white-space:nowrap;
+}
+.btn span.arrow{transition:transform .35s cubic-bezier(.2,.9,.2,1);}
+.btn:hover span.arrow{transform:translateX(5px);}
+.btn:active{transform:scale(0.97);}
+.btn-primary{background:var(--gold); color:var(--forest-deep);}
+.btn-primary:hover{box-shadow:0 10px 26px rgba(182,138,78,0.35);}
+.btn-outline{background:transparent; border-color:currentColor; color:#fff;}
+.btn-outline.dark{color:var(--forest);}
+.btn-ghost{background:transparent; color:var(--forest); border-color:var(--line); padding:12px 20px; font-size:12.5px;}
+.btn-block{width:100%; justify-content:center;}
+
+/* HERO */
+.hero{
+  position:relative; min-height:100vh; display:flex; align-items:flex-end;
+  background:linear-gradient(180deg, rgba(14,33,28,.55), rgba(14,33,28,.86)),
+    url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=1800&auto=format&fit=crop') center/cover no-repeat;
+  color:#fff; padding-bottom:96px; overflow:hidden;
+}
+.hero::after{content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 20% 10%, rgba(182,138,78,0.18), transparent 55%);}
+.hero-inner{position:relative; z-index:2; max-width:1240px; margin:0 auto; padding:0 32px; width:100%;}
+.hero .eyebrow{color:var(--gold-soft);}
+.hero .eyebrow::before{background:var(--gold-soft);}
+.hero h1{font-size:clamp(44px,7vw,92px); margin:22px 0 26px; max-width:15ch; overflow:hidden;}
+.hero h1 .line{display:block; overflow:hidden;}
+.hero h1 .line span{display:inline-block; transform:translateY(110%);}
+.hero p.lead{font-size:18px; line-height:1.6; max-width:520px; color:rgba(255,255,255,.82); margin-bottom:40px;}
+.hero-ctas{display:flex; flex-wrap:wrap; gap:14px; align-items:center; margin-bottom:56px;}
+.hero-ctas .tertiary{font-size:13px; font-weight:600; border-bottom:1px solid var(--gold-soft); padding-bottom:2px; color:#fff;}
+.hero-stats{display:flex; gap:48px; border-top:1px solid rgba(255,255,255,.2); padding-top:24px;}
+.hero-stats .stat b{font-family:'Fraunces',serif; font-size:32px; display:block; color:var(--gold-soft);}
+.hero-stats .stat span{font-size:12px; letter-spacing:.05em; color:rgba(255,255,255,.7);}
+.scroll-cue{position:absolute; right:32px; bottom:36px; z-index:2; display:flex; flex-direction:column; align-items:center; gap:10px; color:rgba(255,255,255,.7);}
+.scroll-cue .line{width:1px; height:44px; background:rgba(255,255,255,.35); position:relative; overflow:hidden;}
+.scroll-cue .line i{position:absolute; top:-100%; left:0; width:100%; height:100%; background:var(--gold-soft); animation:cue 2.2s ease-in-out infinite;}
+@keyframes cue{ 0%{top:-100%;} 60%{top:100%;} 100%{top:100%;} }
+
+/* SECTION GENERAL */
+section{padding:130px 0; position:relative;}
+.section-head{max-width:640px; margin-bottom:64px;}
+.section-head h2{font-size:clamp(30px,4vw,48px); margin-top:18px; color:var(--forest);}
+.section-head p{margin-top:18px; font-size:16.5px; line-height:1.7; color:#4b473f;}
+.on-dark{background:var(--forest-deep); color:var(--ivory);}
+.on-dark .section-head h2{color:#fff;}
+.on-dark .section-head p{color:rgba(246,241,230,0.72);}
+
+/* WHY JOIN */
+.why-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+.why-card{background:var(--cream); padding:36px 28px; cursor:pointer; transition:background .3s ease;}
+.why-card:hover{background:var(--forest); color:#fff;}
+.why-card .n{font-family:'Space Grotesk',monospace; font-size:12px; color:var(--gold); margin-bottom:22px; display:block;}
+.why-card h3{font-size:20px; margin-bottom:10px;}
+.why-card p{font-size:14px; line-height:1.6; color:#5c584f; max-height:0; overflow:hidden; transition:max-height .35s ease, margin-top .35s ease;}
+.why-card:hover p{color:rgba(255,255,255,.78); max-height:120px; margin-top:8px;}
+@media (max-width:900px){ .why-grid{grid-template-columns:1fr 1fr;} }
+@media (max-width:560px){ .why-grid{grid-template-columns:1fr;} }
+
+/* LIFE AT PBIS — horizontal storytelling strip */
+.life-strip{display:flex; gap:2px; height:64vh; min-height:420px;}
+.life-panel{position:relative; flex:1; overflow:hidden; cursor:pointer; transition:flex .6s cubic-bezier(.2,.9,.2,1); background-size:cover; background-position:center;}
+.life-panel:hover{flex:2.4;}
+.life-panel .veil{position:absolute; inset:0; background:linear-gradient(0deg, rgba(14,33,28,.88), rgba(14,33,28,.05) 55%);}
+.life-panel .label{position:absolute; left:20px; bottom:20px; color:#fff; z-index:2;}
+.life-panel .label b{font-family:'Fraunces',serif; font-size:19px; display:block;}
+.life-panel .label span{font-size:12px; color:rgba(255,255,255,.7); font-family:'Space Grotesk',monospace; letter-spacing:.05em;}
+@media (max-width:760px){ .life-strip{flex-direction:column; height:auto;} .life-panel{height:180px;} .life-panel:hover{flex:1;} }
+
+/* OPPORTUNITIES HERO FEATURE */
+.opp-feature{
+  background:var(--forest); color:#fff; border-radius:6px; padding:56px; display:flex;
+  align-items:center; justify-content:space-between; gap:40px; flex-wrap:wrap;
+  position:relative; overflow:hidden;
+}
+.opp-feature::before{content:''; position:absolute; right:-80px; top:-80px; width:320px; height:320px; border:1px solid rgba(255,255,255,.12); border-radius:50%;}
+.opp-feature::after{content:''; position:absolute; right:-40px; top:-40px; width:240px; height:240px; border:1px solid rgba(217,189,140,.25); border-radius:50%;}
+.opp-feature .left{position:relative; z-index:2;}
+.opp-feature h2{font-size:clamp(28px,3.4vw,42px); max-width:12ch;}
+.opp-count{font-family:'Fraunces',serif; font-size:96px; color:var(--gold-soft); line-height:1; position:relative; z-index:2;}
+.opp-count span{display:block; font-family:'Space Grotesk',monospace; font-size:13px; letter-spacing:.1em; color:rgba(255,255,255,.65); margin-top:8px;}
+
+/* JOB SEARCH / FILTER */
+.job-toolbar{display:flex; gap:14px; flex-wrap:wrap; align-items:center; margin:56px 0 34px; justify-content:space-between;}
+.search-box{flex:1; min-width:240px; position:relative;}
+.search-box input{
+  width:100%; padding:16px 20px 16px 44px; border:1px solid var(--line); background:var(--cream);
+  font-family:'Manrope'; font-size:15px; border-radius:2px; outline:none; transition:border-color .25s ease;
+}
+.search-box input:focus{border-color:var(--gold);}
+.search-box svg{position:absolute; left:16px; top:50%; transform:translateY(-50%); opacity:.5;}
+.filters{display:flex; gap:10px; flex-wrap:wrap;}
+.filters select{
+  padding:14px 16px; border:1px solid var(--line); background:var(--cream); font-family:'Manrope'; font-size:13.5px;
+  border-radius:2px; cursor:pointer; color:var(--charcoal);
+}
+.results-count{font-family:'Space Grotesk',monospace; font-size:12.5px; color:#78736a; letter-spacing:.04em; margin-bottom:24px;}
+
+/* JOB CARDS */
+.job-list{display:flex; flex-direction:column; gap:1px; background:var(--line); border:1px solid var(--line); border-radius:4px; overflow:hidden;}
+.job-card{
+  background:var(--cream); padding:30px 32px; display:grid; grid-template-columns:1fr auto auto; gap:24px; align-items:center;
+  cursor:pointer; transition:background .3s ease, padding-left .3s ease; position:relative;
+}
+.job-card:hover{background:#fff; padding-left:40px;}
+.job-card:hover .job-arrow{transform:translateX(6px); opacity:1;}
+.job-card .jc-main b{font-family:'Fraunces',serif; font-size:22px; color:var(--forest); display:block;}
+.job-card .jc-meta{display:flex; gap:16px; flex-wrap:wrap; margin-top:10px;}
+.job-card .jc-meta span{font-size:12.5px; color:#6b665c; display:flex; align-items:center; gap:6px;}
+.job-card .jc-meta span::before{content:''; width:5px; height:5px; border-radius:50%; background:var(--gold);}
+.job-status{font-family:'Space Grotesk',monospace; font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:6px 12px; border:1px solid var(--gold); color:var(--gold-2,#8a6b34); border-radius:20px; white-space:nowrap;}
+.job-arrow{opacity:.4; transition:all .3s ease; color:var(--forest);}
+@media (max-width:760px){ .job-card{grid-template-columns:1fr; gap:12px;} .job-status{width:fit-content;} }
+.empty-state{padding:60px 20px; text-align:center; color:#75705f;}
+
+/* TALENT COMMUNITY */
+.talent-block{
+  background:var(--ivory); border:1px solid var(--line); border-radius:6px; padding:64px; display:grid; grid-template-columns:1fr 1fr; gap:56px;
+}
+.talent-block h2{font-size:36px; color:var(--forest);}
+.talent-block p{margin-top:16px; color:#524d43; line-height:1.7;}
+.mini-form{display:flex; flex-direction:column; gap:14px;}
+.field{display:flex; flex-direction:column; gap:6px;}
+.field label{font-size:12px; font-weight:700; color:var(--forest); letter-spacing:.03em; text-transform:uppercase; font-family:'Space Grotesk',monospace;}
+.field input, .field select, .field textarea{
+  padding:14px 16px; border:1px solid var(--line); background:#fff; font-family:'Manrope'; font-size:14.5px; border-radius:2px; outline:none;
+  transition:border-color .2s ease;
+}
+.field input:focus, .field select:focus, .field textarea:focus{border-color:var(--gold);}
+.field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+@media (max-width:900px){ .talent-block{grid-template-columns:1fr; padding:36px;} }
+
+/* FINAL CTA */
+.final-cta{
+  background:radial-gradient(ellipse at top left, var(--forest-2), var(--forest-deep)); color:#fff; text-align:center; padding:150px 0;
+}
+.final-cta h2{font-size:clamp(34px,5.4vw,64px); max-width:16ch; margin:0 auto 22px;}
+.final-cta p{max-width:560px; margin:0 auto 44px; color:rgba(246,241,230,.75); line-height:1.7; font-size:16.5px;}
+.final-cta .hero-ctas{justify-content:center;}
+
+footer{background:var(--forest-deep); color:rgba(246,241,230,.6); padding:56px 0 32px; font-size:13px;}
+.footer-grid{display:flex; justify-content:space-between; flex-wrap:wrap; gap:24px; padding-bottom:36px; border-bottom:1px solid var(--line-on-dark);}
+.footer-grid .brand{color:#fff;}
+.footer-links{display:flex; gap:28px; flex-wrap:wrap;}
+.footer-bottom{padding-top:24px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;}
+
+/* MODAL / DRAWER (Job detail + Application) */
+.overlay{position:fixed; inset:0; background:rgba(14,20,17,.55); backdrop-filter:blur(3px); z-index:200; opacity:0; pointer-events:none; transition:opacity .3s ease;}
+.overlay.active{opacity:1; pointer-events:auto;}
+.drawer{
+  position:fixed; top:0; right:0; height:100%; width:min(760px,100%); background:var(--cream); z-index:201;
+  transform:translateX(100%); transition:transform .5s cubic-bezier(.2,.9,.2,1); overflow-y:auto; box-shadow:-20px 0 60px rgba(0,0,0,.25);
+}
+.drawer.active{transform:translateX(0);}
+.drawer-head{position:sticky; top:0; background:var(--forest); color:#fff; padding:28px 36px; z-index:5; display:flex; justify-content:space-between; align-items:flex-start;}
+.drawer-close{cursor:pointer; font-size:22px; line-height:1; background:rgba(255,255,255,.12); width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.drawer-body{padding:40px 36px 120px;}
+.drawer-body h1{font-size:32px; color:var(--forest); margin-bottom:14px;}
+.drawer-body .meta-row{display:flex; gap:20px; flex-wrap:wrap; margin-bottom:34px;}
+.drawer-body .meta-row span{font-size:12.5px; color:#6b665c; background:#fff; border:1px solid var(--line); padding:8px 14px; border-radius:20px;}
+.drawer-body h4{font-family:'Space Grotesk',monospace; font-size:13px; letter-spacing:.06em; text-transform:uppercase; color:var(--gold); margin:32px 0 12px;}
+.drawer-body ul{padding-left:20px; line-height:1.9; color:#3d3a34; font-size:15px;}
+.drawer-body p{line-height:1.8; color:#3d3a34; font-size:15px;}
+.sticky-apply{position:sticky; bottom:0; background:linear-gradient(0deg, var(--cream) 60%, rgba(246,241,230,0)); padding:30px 0 4px; margin-top:20px; display:flex; gap:12px;}
+
+/* MULTI-STEP APPLICATION */
+.app-progress{display:flex; gap:6px; margin-bottom:40px;}
+.app-progress .dot{flex:1; height:3px; background:var(--line); border-radius:2px; position:relative; overflow:hidden;}
+.app-progress .dot i{position:absolute; inset:0; background:var(--gold); transform:scaleX(0); transform-origin:left; transition:transform .4s ease;}
+.app-progress .dot.done i, .app-progress .dot.active i{transform:scaleX(1);}
+.step-label{font-family:'Space Grotesk',monospace; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--gold); margin-bottom:6px;}
+.app-step{display:none;}
+.app-step.active{display:block; animation:fadein .4s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(8px);} to{opacity:1; transform:translateY(0);}}
+.step-nav{display:flex; justify-content:space-between; margin-top:36px; gap:12px;}
+.review-box{background:#fff; border:1px solid var(--line); border-radius:4px; padding:24px; margin-bottom:18px;}
+.review-box h5{font-family:'Space Grotesk',monospace; font-size:12px; letter-spacing:.05em; text-transform:uppercase; color:var(--gold); margin-bottom:12px;}
+.review-row{display:flex; justify-content:space-between; padding:6px 0; font-size:14px; border-bottom:1px dashed var(--line);}
+.review-row:last-child{border:none;}
+.dropzone{
+  border:1.5px dashed var(--line); border-radius:4px; padding:44px 20px; text-align:center; cursor:pointer; transition:border-color .25s ease, background .25s ease;
+}
+.dropzone:hover, .dropzone.drag{border-color:var(--gold); background:rgba(182,138,78,0.05);}
+.dropzone svg{margin:0 auto 12px;}
+.file-chip{display:flex; align-items:center; justify-content:space-between; background:#fff; border:1px solid var(--line); padding:12px 16px; border-radius:4px; margin-top:10px; font-size:13.5px;}
+.consent{display:flex; gap:10px; align-items:flex-start; font-size:13px; color:#4b473f; line-height:1.6; margin-top:20px;}
+.consent input{margin-top:3px;}
+
+/* CONFIRMATION */
+.confirm-wrap{text-align:center; padding:60px 10px;}
+.confirm-icon{width:76px; height:76px; border-radius:50%; background:var(--forest); display:flex; align-items:center; justify-content:center; margin:0 auto 28px;}
+.ref-box{display:inline-flex; align-items:center; gap:14px; background:#fff; border:1px solid var(--line); padding:16px 24px; border-radius:4px; margin:24px 0; font-family:'Space Grotesk',monospace; font-size:16px; letter-spacing:.03em;}
+.ref-box button{background:var(--ivory); border:1px solid var(--line); padding:6px 12px; border-radius:3px; cursor:pointer; font-size:12px;}
+
+/* TRACKER */
+.tracker-box{background:#fff; border:1px solid var(--line); border-radius:6px; padding:36px; max-width:520px; margin:0 auto;}
+.status-track{display:flex; flex-direction:column; gap:0; margin-top:28px;}
+.status-item{display:flex; gap:16px; padding-bottom:26px; position:relative;}
+.status-item:not(:last-child)::before{content:''; position:absolute; left:9px; top:22px; bottom:0; width:1px; background:var(--line);}
+.status-item .bead{width:20px; height:20px; border-radius:50%; background:var(--ivory); border:2px solid var(--line); flex-shrink:0; z-index:2;}
+.status-item.done .bead{background:var(--gold); border-color:var(--gold);}
+.status-item.current .bead{background:var(--forest); border-color:var(--forest); box-shadow:0 0 0 4px rgba(22,48,42,0.15);}
+.status-item b{display:block; font-size:14.5px; color:var(--forest);}
+.status-item span{font-size:12.5px; color:#8a8578;}
+
+.toast{position:fixed; bottom:28px; left:50%; transform:translate(-50%,120%); background:var(--forest); color:#fff; padding:16px 26px; border-radius:4px; z-index:400; font-size:14px; transition:transform .4s cubic-bezier(.2,.9,.2,1); display:flex; align-items:center; gap:10px;}
+.toast.show{transform:translate(-50%,0);}
+
+.reveal{opacity:0; transform:translateY(36px);}
+</style>
+</head>
+<body>
+
+<div class="chapter-rail"><div class="track"><div class="fill" id="railFill"></div></div><div class="num" id="railNum">CH. 01</div></div>
+
+<header class="site-nav" id="siteNav">
+  <div class="nav-inner">
+    <a class="brand" href="#top">PBIS Careers<small>Panyathip British International School</small></a>
+    <nav class="nav-links">
+      <a href="#why">Why Join PBIS</a>
+      <a href="#life">Life at PBIS</a>
+      <a href="#opportunities">Current Opportunities</a>
+      <a href="#talent">Talent Community</a>
+      <a href="#" onclick="openTracker(); return false;">Track Application</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="btn btn-primary" href="#opportunities"><span>Explore Opportunities</span><span class="arrow">→</span></a>
+    </div>
+  </div>
+</header>
+
+<section class="hero" id="top">
+  <div class="hero-inner">
+    <div class="eyebrow reveal">PBIS Digital People &amp; Talent Ecosystem · Phase 1</div>
+    <h1>
+      <span class="line"><span>Build Your Future</span></span>
+      <span class="line"><span>With PBIS</span></span>
+    </h1>
+    <p class="lead reveal">Join a community where passionate educators, talented professionals, and inspiring individuals come together to make a meaningful difference in the lives of young people.</p>
+    <div class="hero-ctas reveal">
+      <a class="btn btn-primary" href="#opportunities"><span>Explore Opportunities</span><span class="arrow">→</span></a>
+      <a class="btn btn-outline" href="#talent"><span>Submit Your CV</span><span class="arrow">→</span></a>
+      <a class="tertiary" href="#life">Discover Life at PBIS</a>
+    </div>
+    <div class="hero-stats reveal">
+      <div class="stat"><b id="statOpen">0</b><span>Open Opportunities</span></div>
+      <div class="stat"><b id="statDept">0</b><span>Departments Hiring</span></div>
+      <div class="stat"><b>2</b><span>PBIS Campuses</span></div>
+    </div>
+  </div>
+  <div class="scroll-cue"><span style="font-family:'Space Grotesk',monospace; font-size:10px; letter-spacing:.1em;">SCROLL</span><div class="line"><i></i></div></div>
+</section>
+
+<section id="why">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Why Join PBIS</div>
+      <h2>A community built on purpose, growth, and belonging.</h2>
+      <p>Every chapter of a PBIS career is shaped by the people around you — colleagues who challenge you, students who inspire you, and a community that genuinely invests in your growth.</p>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="why-grid reveal">
+      <div class="why-card"><span class="n">01</span><h3>International Community</h3><p>Work alongside educators and professionals from across the world, in a genuinely multicultural campus environment.</p></div>
+      <div class="why-card"><span class="n">02</span><h3>Professional Growth</h3><p>Structured professional development, mentorship, and clear pathways for career progression.</p></div>
+      <div class="why-card"><span class="n">03</span><h3>Meaningful Impact</h3><p>Every role at PBIS — teaching or otherwise — shapes the outcomes of young people's lives.</p></div>
+      <div class="why-card"><span class="n">04</span><h3>Collaborative Culture</h3><p>A supportive, low-ego environment where ideas are shared openly across departments and campuses.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="life" class="on-dark" style="padding-bottom:0;">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div class="eyebrow">Life at PBIS</div>
+      <h2>Campus life, staff culture, and community — in one frame.</h2>
+    </div>
+  </div>
+  <div class="life-strip reveal">
+    <div class="life-panel" style="background-image:url('https://images.unsplash.com/photo-1571260899304-425eee4c7efc?q=80&w=1200&auto=format&fit=crop')"><div class="veil"></div><div class="label"><b>Campus Life</b><span>Vientiane, Laos</span></div></div>
+    <div class="life-panel" style="background-image:url('https://images.unsplash.com/photo-1580582932707-520aed937b7b?q=80&w=1200&auto=format&fit=crop')"><div class="veil"></div><div class="label"><b>Staff Culture</b><span>Collaborative &amp; supportive</span></div></div>
+    <div class="life-panel" style="background-image:url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1200&auto=format&fit=crop')"><div class="veil"></div><div class="label"><b>Professional Development</b><span>Growth at every stage</span></div></div>
+    <div class="life-panel" style="background-image:url('https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1200&auto=format&fit=crop')"><div class="veil"></div><div class="label"><b>Community Events</b><span>Belonging beyond the classroom</span></div></div>
+    <div class="life-panel" style="background-image:url('https://images.unsplash.com/photo-1519452575417-564c1401ecc0?q=80&w=1200&auto=format&fit=crop')"><div class="veil"></div><div class="label"><b>International Environment</b><span>A truly global campus</span></div></div>
+  </div>
+  <div style="height:110px;"></div>
+</section>
+
+<section id="opportunities">
+  <div class="wrap">
+    <div class="opp-feature reveal">
+      <div class="left">
+        <div class="eyebrow" style="color:var(--gold-soft);">Explore Your Next Opportunity</div>
+        <h2>Roles across teaching, leadership, and operations — open now.</h2>
+        <div style="margin-top:28px;"><a class="btn btn-primary" href="#jobList"><span>View All Opportunities</span><span class="arrow">→</span></a></div>
+      </div>
+      <div class="opp-count" id="heroOppCount">0<span>OPEN OPPORTUNITIES</span></div>
+    </div>
+
+    <div id="jobList" class="job-toolbar reveal" style="margin-top:90px;">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="searchInput" type="text" placeholder="Search opportunities...">
+      </div>
+      <div class="filters">
+        <select id="fDept"><option value="">Department</option></select>
+        <select id="fCampus"><option value="">Campus</option></select>
+        <select id="fType"><option value="">Employment Type</option></select>
+        <select id="fSort">
+          <option value="recent">Most Recent</option>
+          <option value="closing">Closing Soon</option>
+          <option value="dept">Department</option>
+        </select>
+      </div>
+    </div>
+    <div class="results-count reveal" id="resultsCount">— Opportunities Found</div>
+    <div class="job-list reveal" id="jobListEl"></div>
+  </div>
+</section>
+
+<section id="talent">
+  <div class="wrap">
+    <div class="talent-block reveal">
+      <div>
+        <div class="eyebrow">Talent Community</div>
+        <h2>Join Our Talent Community</h2>
+        <p>Don't see the right opportunity today? Submit your CV and stay connected with PBIS. When a position matching your experience becomes available, our HR team may contact you.</p>
+        <p style="margin-top:26px; font-size:13px; color:#8a8578;">Your details join our secure Talent Pool, searchable only by authorized PBIS HR staff.</p>
+      </div>
+      <form class="mini-form" id="talentForm">
+        <div class="field-row">
+          <div class="field"><label>Full Name</label><input required name="name" type="text" placeholder="Jane Doe"></div>
+          <div class="field"><label>Email</label><input required name="email" type="email" placeholder="jane@email.com"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Phone</label><input required name="phone" type="tel" placeholder="+856..."></div>
+          <div class="field"><label>Years of Experience</label>
+            <select name="experience"><option>0–2 years</option><option>3–5 years</option><option>6–10 years</option><option>10+ years</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Preferred Role</label><input name="role" type="text" placeholder="e.g. Secondary Science Teacher"></div>
+          <div class="field"><label>Preferred Campus</label>
+            <select name="campus"><option>No Preference</option><option>Primary Campus</option><option>Secondary Campus</option></select>
+          </div>
+        </div>
+        <div class="field">
+          <label>CV</label>
+          <div class="dropzone" id="talentDrop" style="padding:24px;">
+            <span style="font-size:13.5px; color:#6b665c;">Drop your CV here or <b style="color:var(--forest);">Browse Files</b> — PDF, DOC, DOCX</span>
+          </div>
+          <div id="talentFileChip"></div>
+        </div>
+        <div class="consent"><input type="checkbox" required id="talentConsent"><label for="talentConsent">I consent to PBIS collecting and securely storing my personal information for recruitment purposes, and understand it may be retained for consideration for future opportunities.</label></div>
+        <button class="btn btn-primary btn-block" type="submit" style="margin-top:8px; justify-content:center;"><span>Join the Talent Community</span><span class="arrow">→</span></button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<section class="final-cta">
+  <div class="wrap">
+    <div class="eyebrow reveal" style="justify-content:center; color:var(--gold-soft);">Your Next Chapter</div>
+    <h2 class="reveal">Your Next Chapter Could Begin Here.</h2>
+    <p class="reveal">Whether you are an experienced educator, an ambitious professional, or someone looking for an opportunity to make a meaningful difference, we would love to hear from you.</p>
+    <div class="hero-ctas reveal">
+      <a class="btn btn-primary" href="#opportunities"><span>Explore Opportunities</span><span class="arrow">→</span></a>
+      <a class="btn btn-outline" href="#talent"><span>Submit Your CV</span><span class="arrow">→</span></a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <a class="brand" href="#top">PBIS Careers<small>Panyathip British International School</small></a>
+      <div class="footer-links">
+        <a href="#why">Why Join PBIS</a><a href="#life">Life at PBIS</a><a href="#opportunities">Current Opportunities</a><a href="#talent">Talent Community</a><a href="#" onclick="openTracker(); return false;">Track Application</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Panyathip British International School — PBIS Digital People &amp; Talent Ecosystem</span>
+      <span><a href="#" onclick="return false;">Privacy Policy</a> · <a href="#" onclick="return false;">Data Retention Policy</a></span>
+    </div>
+  </div>
+</footer>
+
+<!-- OVERLAY / DRAWER -->
+<div class="overlay" id="overlay"></div>
+<div class="drawer" id="jobDrawer">
+  <div class="drawer-head">
+    <div>
+      <div class="eyebrow" style="color:var(--gold-soft); margin-bottom:8px;">Job Opening</div>
+    </div>
+    <div class="drawer-close" onclick="closeDrawer('jobDrawer')">×</div>
+  </div>
+  <div class="drawer-body" id="jobDrawerBody"></div>
+</div>
+
+<div class="drawer" id="appDrawer">
+  <div class="drawer-head">
+    <div><div class="eyebrow" style="color:var(--gold-soft); margin-bottom:8px;">Apply to PBIS</div><h3 style="color:#fff; font-size:20px;" id="appDrawerTitle">Application</h3></div>
+    <div class="drawer-close" onclick="closeDrawer('appDrawer')">×</div>
+  </div>
+  <div class="drawer-body">
+    <div class="app-progress" id="appProgress"></div>
+    <form id="applicationForm">
+      <div class="app-step active" data-step="1">
+        <div class="step-label">Step 1 · About You</div>
+        <div class="field-row"><div class="field"><label>Full Name</label><input required name="fullName"></div><div class="field"><label>Email</label><input required type="email" name="email"></div></div>
+        <div class="field-row"><div class="field"><label>Phone</label><input required name="phone"></div><div class="field"><label>Nationality</label><input required name="nationality"></div></div>
+        <div class="field"><label>Current Location</label><input required name="location"></div>
+      </div>
+      <div class="app-step" data-step="2">
+        <div class="step-label">Step 2 · Your Experience</div>
+        <div class="field-row"><div class="field"><label>Current Position</label><input name="currentPosition"></div><div class="field"><label>Previous Employer</label><input name="previousEmployer"></div></div>
+        <div class="field"><label>Years of Experience</label><select name="yearsExperience"><option>0–2 years</option><option>3–5 years</option><option>6–10 years</option><option>10+ years</option></select></div>
+        <div class="field"><label>Professional Background</label><textarea name="background" rows="4" placeholder="A short summary of your professional background"></textarea></div>
+      </div>
+      <div class="app-step" data-step="3">
+        <div class="step-label">Step 3 · Your Qualifications</div>
+        <div class="field"><label>Highest Qualification</label><input required name="qualification"></div>
+        <div class="field"><label>Certifications</label><input name="certifications" placeholder="e.g. PGCE, QTS, IB Certificate"></div>
+        <div class="field"><label>Areas of Expertise</label><input name="expertise" placeholder="e.g. Secondary Science, Pastoral Care"></div>
+      </div>
+      <div class="app-step" data-step="4">
+        <div class="step-label">Step 4 · Your Application</div>
+        <div class="field-row"><div class="field"><label>Position</label><input readonly name="position" id="appPositionField"></div><div class="field"><label>Department</label><input readonly name="department" id="appDeptField"></div></div>
+        <div class="field"><label>Campus</label><input readonly name="campus" id="appCampusField"></div>
+        <div class="field"><label>Cover Letter</label><textarea name="coverLetter" rows="6" placeholder="Tell us why you'd be a great fit for PBIS"></textarea></div>
+      </div>
+      <div class="app-step" data-step="5">
+        <div class="step-label">Step 5 · Your Documents</div>
+        <div class="field"><label>CV (Required)</label>
+          <div class="dropzone" data-target="cv"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#B68A4E" stroke-width="1.6"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 002 2h12a2 2 0 002-2v-3"/></svg><div>Drop your CV here or <b style="color:var(--forest);">Browse Files</b></div><small style="color:#8a8578;">PDF, DOC, DOCX</small></div>
+          <div class="file-out" data-out="cv"></div>
+        </div>
+        <div class="field"><label>Cover Letter File (Optional)</label>
+          <div class="dropzone" data-target="coverFile"><small style="color:#8a8578;">Drop file or Browse</small></div>
+          <div class="file-out" data-out="coverFile"></div>
+        </div>
+        <div class="field"><label>Portfolio / Supporting Documents (Optional)</label>
+          <div class="dropzone" data-target="portfolio"><small style="color:#8a8578;">Drop file or Browse</small></div>
+          <div class="file-out" data-out="portfolio"></div>
+        </div>
+      </div>
+      <div class="app-step" data-step="6">
+        <div class="step-label">Step 6 · Review &amp; Submit</div>
+        <div id="reviewArea"></div>
+        <div class="consent"><input type="checkbox" required id="appConsent"><label for="appConsent">I consent to PBIS collecting and securely storing my personal information for recruitment purposes. I understand my information may be retained for consideration for future opportunities.</label></div>
+      </div>
+
+      <div class="step-nav">
+        <button type="button" class="btn btn-ghost" id="prevStepBtn" style="visibility:hidden;">← Back</button>
+        <button type="button" class="btn btn-primary" id="nextStepBtn"><span>Continue</span><span class="arrow">→</span></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="drawer" id="confirmDrawer">
+  <div class="drawer-head"><div></div><div class="drawer-close" onclick="closeDrawer('confirmDrawer')">×</div></div>
+  <div class="drawer-body confirm-wrap">
+    <div class="confirm-icon"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#D9BD8C" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div>
+    <h1 style="color:var(--forest);">Thank You for Your Interest in PBIS</h1>
+    <p style="color:#6b665c; max-width:420px; margin:14px auto 0;">Your application has been successfully received. Our HR team will review your submission and be in touch.</p>
+    <div class="ref-box"><span id="refNumber">PBIS-HR-2026-00000</span><button onclick="copyRef()">Copy</button></div>
+    <div style="display:flex; gap:12px; justify-content:center; margin-top:20px; flex-wrap:wrap;">
+      <button class="btn btn-ghost" onclick="downloadConfirmation()">Download Confirmation</button>
+      <button class="btn btn-primary" onclick="closeDrawer('confirmDrawer')"><span>Return to PBIS Careers</span><span class="arrow">→</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="trackerDrawer">
+  <div class="drawer-head"><div><div class="eyebrow" style="color:var(--gold-soft);">Application Tracker</div><h3 style="color:#fff; font-size:20px;">Track Your Application</h3></div><div class="drawer-close" onclick="closeDrawer('trackerDrawer')">×</div></div>
+  <div class="drawer-body">
+    <div class="tracker-box">
+      <div class="field"><label>Application Reference or Email</label><input id="trackInput" placeholder="PBIS-HR-2026-00125"></div>
+      <button class="btn btn-primary btn-block" style="margin-top:14px; justify-content:center;" onclick="lookupStatus()"><span>Check Status</span><span class="arrow">→</span></button>
+      <div id="trackResult"></div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------------- MOCK DATA (would come from Google Sheets / API in production) ---------------- */
+const JOBS = [
+  {id:'J-001', title:'Secondary English Teacher', dept:'Secondary Academic', campus:'Secondary Campus', type:'Full-Time', location:'Vientiane, Laos', posted:'2026-07-10', deadline:'2026-08-20', level:'Mid-Level', status:'Applications Open',
+    about:'We are seeking an inspiring Secondary English Teacher to join our Secondary Academic department, delivering an engaging, internationally-minded curriculum to students aged 11–18.',
+    responsibilities:['Plan and deliver engaging English lessons aligned with the British curriculum','Assess and report on student progress','Contribute to extracurricular and pastoral programmes','Collaborate with the wider Secondary Academic team'],
+    requirements:['Bachelor\'s degree in English or related field','QTS or equivalent teaching qualification','Minimum 2 years teaching experience'],
+    qualifications:['PGCE or equivalent','IB or IGCSE experience preferred'],
+    experience:'2+ years',
+    offer:['Competitive international salary','Housing allowance','Professional development budget','Relocation support']},
+  {id:'J-002', title:'Primary Homeroom Teacher', dept:'Primary Academic', campus:'Primary Campus', type:'Full-Time', location:'Vientiane, Laos', posted:'2026-07-05', deadline:'2026-08-15', level:'Entry-Level', status:'Applications Open',
+    about:'Lead a Primary homeroom class, creating a nurturing and stimulating learning environment for young learners.',
+    responsibilities:['Deliver the Primary curriculum across core subjects','Foster a positive, inclusive classroom culture','Communicate regularly with parents','Participate in whole-school events'],
+    requirements:['Bachelor\'s degree in Education','Teaching certification'],
+    qualifications:['Experience with EYFS or IPC frameworks a plus'],
+    experience:'1+ years',
+    offer:['Competitive salary','Housing allowance','Health insurance','Tuition discount for dependents']},
+  {id:'J-003', title:'Head of Mathematics', dept:'Secondary Academic', campus:'Secondary Campus', type:'Full-Time', location:'Vientiane, Laos', posted:'2026-06-28', deadline:'2026-08-05', level:'Leadership', status:'Closing Soon',
+    about:'Lead the Mathematics department, setting the vision for curriculum excellence and mentoring a team of dedicated teachers.',
+    responsibilities:['Lead curriculum planning across Key Stages','Mentor and appraise department staff','Monitor student outcomes and intervention','Represent Mathematics at leadership meetings'],
+    requirements:['5+ years teaching Mathematics','Prior departmental leadership experience'],
+    qualifications:['Master\'s degree preferred'],
+    experience:'5+ years',
+    offer:['Leadership allowance','Housing allowance','Annual flights home','Professional development budget']},
+  {id:'J-004', title:'School Counsellor', dept:'Pastoral & Wellbeing', campus:'Secondary Campus', type:'Full-Time', location:'Vientiane, Laos', posted:'2026-07-15', deadline:'2026-09-01', level:'Mid-Level', status:'Applications Open',
+    about:'Support the social, emotional, and academic wellbeing of our secondary students in a caring, confidential capacity.',
+    responsibilities:['Provide 1:1 and group counselling support','Collaborate with teaching staff on student welfare','Run wellbeing workshops','Maintain confidential case records'],
+    requirements:['Degree in Psychology or Counselling','Relevant clinical experience'],
+    qualifications:['Registered counsellor certification preferred'],
+    experience:'3+ years',
+    offer:['Competitive salary','Housing allowance','Health insurance']},
+  {id:'J-005', title:'IT Systems Administrator', dept:'Operations & IT', campus:'Both Campuses', type:'Full-Time', location:'Vientiane, Laos', posted:'2026-07-18', deadline:'2026-08-25', level:'Mid-Level', status:'Applications Open',
+    about:'Maintain and develop PBIS\'s digital infrastructure across both campuses, supporting staff and students with reliable technology.',
+    responsibilities:['Manage school network and server infrastructure','Support staff and student devices','Maintain data security protocols','Lead digital projects across campuses'],
+    requirements:['Degree in IT or related field','3+ years systems administration experience'],
+    qualifications:['Relevant IT certifications a plus'],
+    experience:'3+ years',
+    offer:['Competitive salary','Housing allowance','Professional development budget']},
+  {id:'J-006', title:'Admissions Officer', dept:'Admissions & Marketing', campus:'Primary Campus', type:'Part-Time', location:'Vientiane, Laos', posted:'2026-07-01', deadline:'2026-07-30', level:'Entry-Level', status:'Closing Soon',
+    about:'Be the first point of contact for prospective PBIS families, guiding them through the admissions journey.',
+    responsibilities:['Manage enquiries and campus tours','Process applications and enrolment documentation','Support admissions events','Maintain the CRM database'],
+    requirements:['Strong interpersonal and organisational skills','Experience in a customer-facing role'],
+    qualifications:['Experience in education admissions preferred'],
+    experience:'1+ years',
+    offer:['Competitive salary','Flexible working arrangements']},
+];
+
+let currentAppJob = null;
+const uploadedFiles = {};
+
+/* ---------------- LIVE BACKEND (PBIS Careers Apps Script API) ----------------
+   Deployment: AKfycbw3SNY81Ga5AK1XE8seSlb9-qxaNUyT7GyUNDwv71X1XksVQD-o_GSphk80XIBBhyQ8
+   Two transport modes are supported automatically:
+   1. Embedded  — this file served BY Apps Script (HtmlService). Uses google.script.run,
+      which has no CORS restrictions at all. This is the recommended path.
+   2. Standalone — this file opened directly (e.g. as a static file/artifact). Falls back
+      to fetch() against the /exec URL. Works for sending data (applies to the sheet),
+      but Apps Script does not return CORS headers, so the browser may block reading the
+      JSON response. In that case we catch the error and fall back to a locally generated
+      reference so the candidate experience still completes.
+------------------------------------------------------------------------------- */
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw3SNY81Ga5AK1XE8seSlb9-qxaNUyT7GyUNDwv71X1XksVQD-o_GSphk80XIBBhyQ8/exec';
+const IS_EMBEDDED = typeof google !== 'undefined' && !!google.script && !!google.script.run;
+
+const API = {
+  jobs(){
+    if(IS_EMBEDDED){
+      return new Promise((resolve)=> google.script.run.withSuccessHandler(resolve).withFailureHandler(()=>resolve(null)).apiListJobs());
+    }
+    return fetch(`${APPS_SCRIPT_URL}?path=jobs`).then(r=>r.json()).catch(()=>null);
+  },
+  submitApplication(payload){
+    if(IS_EMBEDDED){
+      return new Promise((resolve,reject)=> google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).apiCreateApplication(payload));
+    }
+    return fetch(`${APPS_SCRIPT_URL}?path=applications`, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)
+    }).then(r=>r.json());
+  },
+  submitTalent(payload){
+    if(IS_EMBEDDED){
+      return new Promise((resolve,reject)=> google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).apiCreateTalentPoolEntry(payload));
+    }
+    return fetch(`${APPS_SCRIPT_URL}?path=talent-pool`, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)
+    }).then(r=>r.json());
+  },
+  track(ref, email){
+    if(IS_EMBEDDED){
+      return new Promise((resolve)=> google.script.run.withSuccessHandler(resolve).withFailureHandler(()=>resolve(null)).apiTrackApplication(ref, email));
+    }
+    return fetch(`${APPS_SCRIPT_URL}?path=track&ref=${encodeURIComponent(ref||'')}&email=${encodeURIComponent(email||'')}`).then(r=>r.json()).catch(()=>null);
+  }
+};
+
+function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+    if(!file){ resolve(''); return; }
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result.split(',')[1]);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------------- INIT ---------------- */
+document.addEventListener('DOMContentLoaded', () => {
+  populateFilters();
+  renderJobs();
+  animateCounters();
+  initGSAP();
+  bindEvents();
+  loadLiveJobs();
+});
+
+async function loadLiveJobs(){
+  const live = await API.jobs();
+  if(live && Array.isArray(live) && live.length){
+    JOBS.length = 0;
+    live.forEach(j => JOBS.push(normalizeLiveJob(j)));
+    populateFilters();
+    renderJobs();
+    animateCounters();
+  }
+}
+
+function normalizeLiveJob(j){
+  return {
+    id: j['Job ID'] || j.id, title: j['Job Title'] || j.title, dept: j['Department'] || j.dept,
+    campus: j['Campus'] || j.campus, type: j['Employment Type'] || j.type, location: j['Campus'] || 'Vientiane, Laos',
+    posted: j['Posted Date'] || j.posted, deadline: j['Application Deadline'] || j.deadline,
+    level: j['Experience Level'] || j.level, status: j['Status'] || 'Applications Open',
+    about: j['Description'] || '', responsibilities: splitList_(j['Responsibilities']),
+    requirements: splitList_(j['Requirements']), qualifications: splitList_(j['Qualifications']),
+    experience: j['Experience Level'] || '', offer: []
+  };
+}
+function splitList_(v){ return v ? String(v).split(/\n|;/).map(s=>s.trim()).filter(Boolean) : []; }
+
+function populateFilters(){
+  const depts = [...new Set(JOBS.map(j=>j.dept))];
+  const camps = [...new Set(JOBS.map(j=>j.campus))];
+  const types = [...new Set(JOBS.map(j=>j.type))];
+  fDept.innerHTML = '<option value="">Department</option>' + depts.map(d=>`<option>${d}</option>`).join('');
+  fCampus.innerHTML = '<option value="">Campus</option>' + camps.map(c=>`<option>${c}</option>`).join('');
+  fType.innerHTML = '<option value="">Employment Type</option>' + types.map(t=>`<option>${t}</option>`).join('');
+}
+
+function animateCounters(){
+  const open = JOBS.length;
+  const depts = new Set(JOBS.map(j=>j.dept)).size;
+  gsap.to({v:0},{v:open, duration:1.4, delay:.6, ease:'power2.out', onUpdate:function(){ statOpen.textContent = Math.round(this.targets()[0].v); heroOppCount.childNodes[0].textContent = Math.round(this.targets()[0].v); }});
+  gsap.to({v:0},{v:depts, duration:1.4, delay:.7, ease:'power2.out', onUpdate:function(){ statDept.textContent = Math.round(this.targets()[0].v); }});
+}
+
+function getFiltered(){
+  let list = [...JOBS];
+  const q = searchInput.value.trim().toLowerCase();
+  if(q) list = list.filter(j => (j.title+j.dept+j.campus).toLowerCase().includes(q));
+  if(fDept.value) list = list.filter(j=>j.dept===fDept.value);
+  if(fCampus.value) list = list.filter(j=>j.campus===fCampus.value);
+  if(fType.value) list = list.filter(j=>j.type===fType.value);
+  if(fSort.value==='recent') list.sort((a,b)=> new Date(b.posted)-new Date(a.posted));
+  if(fSort.value==='closing') list.sort((a,b)=> new Date(a.deadline)-new Date(b.deadline));
+  if(fSort.value==='dept') list.sort((a,b)=> a.dept.localeCompare(b.dept));
+  return list;
+}
+
+function renderJobs(){
+  const list = getFiltered();
+  resultsCount.textContent = `${list.length} Opportunit${list.length===1?'y':'ies'} Found`;
+  if(!list.length){
+    jobListEl.innerHTML = `<div class="empty-state">No opportunities match your search right now. <br><a href="#talent" style="color:var(--forest); font-weight:700;">Join our Talent Community</a> to be notified when new roles open.</div>`;
+    return;
+  }
+  jobListEl.innerHTML = list.map(j => `
+    <div class="job-card" onclick="openJob('${j.id}')">
+      <div class="jc-main">
+        <b>${j.title}</b>
+        <div class="jc-meta">
+          <span>${j.dept}</span><span>${j.campus}</span><span>${j.type}</span><span>${j.location}</span>
+        </div>
+      </div>
+      <div class="job-status">${j.status}</div>
+      <div class="job-arrow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </div>
+    </div>
+  `).join('');
+}
+
+['searchInput','fDept','fCampus','fType','fSort'].forEach(id=>{});
+function bindEvents(){
+  searchInput.addEventListener('input', renderJobs);
+  fDept.addEventListener('change', renderJobs);
+  fCampus.addEventListener('change', renderJobs);
+  fType.addEventListener('change', renderJobs);
+  fSort.addEventListener('change', renderJobs);
+  talentForm.addEventListener('submit', submitTalent);
+  talentDrop.addEventListener('click', ()=> pickFile('talent'));
+  document.querySelectorAll('.dropzone[data-target]').forEach(dz=>{
+    dz.addEventListener('click', ()=> pickFile(dz.dataset.target));
+  });
+  overlay.addEventListener('click', closeAllDrawers);
+  prevStepBtn.addEventListener('click', ()=> gotoStep(currentStep-1));
+  nextStepBtn.addEventListener('click', handleNext);
+}
+
+function pickFile(target){
+  const input = document.createElement('input');
+  input.type='file'; input.accept='.pdf,.doc,.docx';
+  input.onchange = e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    uploadedFiles[target] = file;
+    const sizeKb = (file.size/1024).toFixed(0);
+    const html = `<div class="file-chip"><span>📄 ${file.name} · ${sizeKb} KB</span><span onclick="removeFile('${target}')" style="cursor:pointer; color:#a04a3d;">Remove</span></div>`;
+    if(target==='talent'){ talentFileChip.innerHTML = html; }
+    else { document.querySelector(`.file-out[data-out="${target}"]`).innerHTML = html; }
+    showToast('File uploaded successfully');
+  };
+  input.click();
+}
+function removeFile(target){
+  delete uploadedFiles[target];
+  if(target==='talent'){ talentFileChip.innerHTML=''; }
+  else { document.querySelector(`.file-out[data-out="${target}"]`).innerHTML=''; }
+}
+
+/* ---------------- JOB DETAIL DRAWER ---------------- */
+function openJob(id){
+  const j = JOBS.find(x=>x.id===id);
+  currentAppJob = j;
+  jobDrawerBody.innerHTML = `
+    <h1>${j.title}</h1>
+    <div class="meta-row">
+      <span>${j.dept}</span><span>${j.campus}</span><span>${j.location}</span><span>${j.type}</span><span>Deadline: ${formatDate(j.deadline)}</span>
+    </div>
+    <h4>About the Role</h4><p>${j.about}</p>
+    <h4>Key Responsibilities</h4><ul>${j.responsibilities.map(r=>`<li>${r}</li>`).join('')}</ul>
+    <h4>Requirements</h4><ul>${j.requirements.map(r=>`<li>${r}</li>`).join('')}</ul>
+    <h4>Qualifications</h4><ul>${j.qualifications.map(r=>`<li>${r}</li>`).join('')}</ul>
+    <h4>Experience</h4><p>${j.experience}</p>
+    <h4>What We Offer</h4><ul>${j.offer.map(r=>`<li>${r}</li>`).join('')}</ul>
+    <h4>About PBIS</h4><p>Panyathip British International School is a premium international school community in Vientiane, Laos, delivering a British-standard education to a diverse, multicultural student body.</p>
+    <div class="sticky-apply">
+      <button class="btn btn-primary" onclick="startApplication('${j.id}')"><span>Apply for This Position</span><span class="arrow">→</span></button>
+      <a class="btn btn-ghost" href="#talent" onclick="closeDrawer('jobDrawer')">Submit Your CV</a>
+    </div>
+  `;
+  openDrawer('jobDrawer');
+}
+
+/* ---------------- MULTI-STEP APPLICATION ---------------- */
+let currentStep = 1;
+const totalSteps = 6;
+const stepLabels = ['Personal','Experience','Qualifications','Application','Documents','Review'];
+
+function startApplication(jobId){
+  currentAppJob = JOBS.find(j=>j.id===jobId) || null;
+  closeDrawer('jobDrawer');
+  applicationForm.reset();
+  Object.keys(uploadedFiles).forEach(k=>{ if(k!=='talent') delete uploadedFiles[k]; });
+  document.querySelectorAll('.file-out').forEach(f=>f.innerHTML='');
+  appDrawerTitle.textContent = currentAppJob ? `Apply · ${currentAppJob.title}` : 'General Application';
+  if(currentAppJob){
+    appPositionField.value = currentAppJob.title;
+    appDeptField.value = currentAppJob.dept;
+    appCampusField.value = currentAppJob.campus;
+  }
+  buildProgress();
+  gotoStep(1);
+  openDrawer('appDrawer');
+}
+
+function buildProgress(){
+  appProgress.innerHTML = stepLabels.map((l,i)=>`<div class="dot" data-i="${i+1}"><i></i></div>`).join('');
+}
+
+function gotoStep(n){
+  if(n<1) n=1; if(n>totalSteps) n=totalSteps;
+  currentStep = n;
+  document.querySelectorAll('.app-step').forEach(s=> s.classList.toggle('active', +s.dataset.step===n));
+  document.querySelectorAll('#appProgress .dot').forEach(d=>{
+    const i = +d.dataset.i;
+    d.classList.toggle('done', i<n);
+    d.classList.toggle('active', i<=n);
+  });
+  prevStepBtn.style.visibility = n===1 ? 'hidden':'visible';
+  nextStepBtn.innerHTML = n===totalSteps ? '<span>Submit Application</span><span class="arrow">✓</span>' : '<span>Continue</span><span class="arrow">→</span>';
+  if(n===totalSteps) buildReview();
+  document.querySelector('.drawer-body').scrollTo({top:0, behavior:'smooth'});
+}
+
+function handleNext(){
+  if(currentStep < totalSteps){ gotoStep(currentStep+1); }
+  else { submitApplication(); }
+}
+
+function buildReview(){
+  const fd = new FormData(applicationForm);
+  const val = k => fd.get(k) || '—';
+  reviewArea.innerHTML = `
+    <div class="review-box"><h5>About You</h5>
+      <div class="review-row"><span>Full Name</span><b>${val('fullName')}</b></div>
+      <div class="review-row"><span>Email</span><b>${val('email')}</b></div>
+      <div class="review-row"><span>Phone</span><b>${val('phone')}</b></div>
+      <div class="review-row"><span>Nationality</span><b>${val('nationality')}</b></div>
+    </div>
+    <div class="review-box"><h5>Experience</h5>
+      <div class="review-row"><span>Current Position</span><b>${val('currentPosition')}</b></div>
+      <div class="review-row"><span>Years of Experience</span><b>${val('yearsExperience')}</b></div>
+    </div>
+    <div class="review-box"><h5>Application</h5>
+      <div class="review-row"><span>Position</span><b>${val('position')}</b></div>
+      <div class="review-row"><span>Department</span><b>${val('department')}</b></div>
+      <div class="review-row"><span>Campus</span><b>${val('campus')}</b></div>
+    </div>
+    <div class="review-box"><h5>Documents</h5>
+      <div class="review-row"><span>CV</span><b>${uploadedFiles.cv ? uploadedFiles.cv.name : 'Not uploaded'}</b></div>
+      <div class="review-row"><span>Cover Letter File</span><b>${uploadedFiles.coverFile ? uploadedFiles.coverFile.name : '—'}</b></div>
+    </div>
+  `;
+}
+
+async function submitApplication(){
+  if(!document.getElementById('appConsent').checked){ showToast('Please accept the consent statement to continue'); return; }
+
+  nextStepBtn.disabled = true;
+  nextStepBtn.innerHTML = '<span>Submitting…</span>';
+
+  const fd = new FormData(applicationForm);
+  const payload = {
+    fullName: fd.get('fullName'), email: fd.get('email'), phone: fd.get('phone'),
+    nationality: fd.get('nationality'), location: fd.get('location'),
+    currentPosition: fd.get('currentPosition'), previousEmployer: fd.get('previousEmployer'),
+    yearsExperience: fd.get('yearsExperience'), background: fd.get('background'),
+    qualification: fd.get('qualification'), certifications: fd.get('certifications'), expertise: fd.get('expertise'),
+    jobId: currentAppJob ? currentAppJob.id : '', positionTitle: fd.get('position') || 'General Application',
+    department: fd.get('department'), campus: fd.get('campus'), coverLetter: fd.get('coverLetter'),
+    cvFileName: uploadedFiles.cv ? uploadedFiles.cv.name : '',
+    cvBase64: await fileToBase64(uploadedFiles.cv)
+  };
+
+  let result = null;
+  try { result = await API.submitApplication(payload); } catch(err){ result = null; }
+
+  const ref = (result && result.reference) ? result.reference : generateRef();
+  refNumber.textContent = ref;
+  nextStepBtn.disabled = false;
+
+  if(result && result.error === 'duplicate'){
+    showToast('An application for this position already exists on file');
+  }
+
+  closeDrawer('appDrawer');
+  openDrawer('confirmDrawer');
+  showToast(result && result.reference ? 'Application submitted to PBIS HR' : 'Application submitted successfully');
+}
+
+function generateRef(){
+  const n = Math.floor(10000 + Math.random()*89999);
+  return `PBIS-HR-2026-${n}`;
+}
+function copyRef(){
+  navigator.clipboard.writeText(refNumber.textContent);
+  showToast('Reference copied to clipboard');
+}
+function downloadConfirmation(){
+  const blob = new Blob([`PBIS Careers — Application Confirmation\n\nReference: ${refNumber.textContent}\nStatus: Application Received\n\nThank you for applying to Panyathip British International School.`], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${refNumber.textContent}-confirmation.txt`;
+  a.click();
+}
+
+/* ---------------- TALENT FORM ---------------- */
+async function submitTalent(e){
+  e.preventDefault();
+  if(!talentConsent.checked){ showToast('Please accept the consent statement'); return; }
+  const fd = new FormData(talentForm);
+  const payload = {
+    name: fd.get('name'), email: fd.get('email'), phone: fd.get('phone'),
+    role: fd.get('role'), campus: fd.get('campus'), experience: fd.get('experience'),
+    cvFileName: uploadedFiles.talent ? uploadedFiles.talent.name : '',
+    cvBase64: await fileToBase64(uploadedFiles.talent)
+  };
+  try { await API.submitTalent(payload); } catch(err){ /* handled by fallback toast below */ }
+  showToast('Welcome to the PBIS Talent Community');
+  talentForm.reset();
+  talentFileChip.innerHTML='';
+  removeFile('talent');
+}
+
+/* ---------------- TRACKER ---------------- */
+function openTracker(){ openDrawer('trackerDrawer'); }
+async function lookupStatus(){
+  const q = trackInput.value.trim();
+  if(!q){ showToast('Enter a reference number or email'); return; }
+
+  const stages = ['Application Received','Under Review','Shortlisted','Interview Requested','Interview Scheduled','Offer Stage'];
+  const isEmail = q.includes('@');
+  let live = null;
+  try { live = await API.track(isEmail ? '' : q, isEmail ? q : ''); } catch(err){ live = null; }
+
+  if(live && live.error === 'not_found'){
+    trackResult.innerHTML = `<div style="margin-top:26px; font-size:13.5px; color:#a04a3d;">No application found for that reference or email. Double-check and try again, or contact PBIS HR.</div>`;
+    return;
+  }
+
+  const ref = live && live.reference ? live.reference : (q.toUpperCase().includes('PBIS') ? q : 'PBIS-HR-2026-00125');
+  const currentIdx = live && live.status ? Math.max(0, stages.indexOf(live.status)) : 1;
+
+  trackResult.innerHTML = `
+    <div style="margin-top:26px; font-size:12.5px; color:#8a8578; font-family:'Space Grotesk',monospace;">REFERENCE · ${ref}</div>
+    <div class="status-track">
+      ${stages.map((s,i)=>`
+        <div class="status-item ${i<currentIdx?'done':''} ${i===currentIdx?'current':''}">
+          <div class="bead"></div>
+          <div><b>${s}</b><span>${i<=currentIdx ? 'Updated by PBIS HR' : 'Pending'}</span></div>
+        </div>`).join('')}
+    </div>
+  `;
+}
+
+/* ---------------- DRAWER HELPERS ---------------- */
+function openDrawer(id){
+  overlay.classList.add('active');
+  document.getElementById(id).classList.add('active');
+  document.body.style.overflow='hidden';
+}
+function closeDrawer(id){
+  document.getElementById(id).classList.remove('active');
+  const anyOpen = document.querySelectorAll('.drawer.active').length;
+  if(!anyOpen){ overlay.classList.remove('active'); document.body.style.overflow=''; }
+}
+function closeAllDrawers(){
+  document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('active'));
+  overlay.classList.remove('active');
+  document.body.style.overflow='';
+}
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(window._toastT);
+  window._toastT = setTimeout(()=> toast.classList.remove('show'), 2600);
+}
+function formatDate(d){
+  return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+}
+
+/* ---------------- GSAP ---------------- */
+function initGSAP(){
+  gsap.registerPlugin(ScrollTrigger);
+
+  gsap.to('.hero h1 .line span', {y:'0%', duration:1.1, ease:'power4.out', stagger:0.12, delay:.3});
+  gsap.to('.hero .reveal', {opacity:1, y:0, duration:1, ease:'power3.out', stagger:0.1, delay:.9});
+
+  gsap.utils.toArray('.reveal').forEach(el=>{
+    if(el.closest('.hero')) return;
+    gsap.to(el, {
+      opacity:1, y:0, duration:0.9, ease:'power3.out',
+      scrollTrigger:{ trigger:el, start:'top 88%' }
+    });
+  });
+
+  ScrollTrigger.create({
+    trigger:document.body, start:'top top', end:'bottom bottom',
+    onUpdate: self => { railFill.style.height = (self.progress*100)+'%'; railNum.textContent = 'CH. ' + String(Math.min(6, Math.floor(self.progress*6)+1)).padStart(2,'0'); }
+  });
+
+  ScrollTrigger.create({
+    start: 60, onUpdate: self => { siteNav.classList.toggle('scrolled', self.scroll()>60); }
+  });
+
+  // Magnetic buttons
+  document.querySelectorAll('.btn').forEach(btn=>{
+    btn.addEventListener('mousemove', e=>{
+      const r = btn.getBoundingClientRect();
+      const x = e.clientX - r.left - r.width/2;
+      const y = e.clientY - r.top - r.height/2;
+      gsap.to(btn, {x:x*0.25, y:y*0.35, duration:0.4, ease:'power3.out'});
+    });
+    btn.addEventListener('mouseleave', ()=> gsap.to(btn, {x:0,y:0, duration:0.5, ease:'elastic.out(1,0.4)'}));
+  });
+}
+</script>
+</body>
+</html>
