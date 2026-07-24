@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PBIS Careers Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<style>
+:root{
+  --forest:#16302A; --forest-deep:#0E211C; --forest-2:#24443A;
+  --gold:#B68A4E; --gold-soft:#D9BD8C; --ivory:#F6F1E6; --cream:#FBF8F1;
+  --charcoal:#211F1B; --line:#E7E1D3; --sidebar-w:248px;
+  --ok:#3E7A5B; --warn:#C08A2E; --danger:#A04A3D; --info:#3D6FA0;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{font-family:'Manrope',sans-serif; background:var(--ivory); color:var(--charcoal); font-size:14px;}
+h1,h2,h3{font-family:'Fraunces',serif; font-weight:600;}
+.mono{font-family:'Space Grotesk',monospace;}
+a{color:inherit; text-decoration:none;}
+
+.layout{display:flex; min-height:100vh;}
+.sidebar{
+  width:var(--sidebar-w); background:var(--forest-deep); color:rgba(246,241,230,.85); flex-shrink:0;
+  display:flex; flex-direction:column; position:fixed; top:0; bottom:0;
+}
+.sidebar .brand{padding:26px 24px; border-bottom:1px solid rgba(255,255,255,.08);}
+.sidebar .brand b{font-family:'Fraunces',serif; color:#fff; font-size:18px; display:block;}
+.sidebar .brand span{font-family:'Space Grotesk',monospace; font-size:9px; letter-spacing:.14em; color:var(--gold-soft); text-transform:uppercase;}
+.nav-group{padding:18px 12px;}
+.nav-group .label{font-family:'Space Grotesk',monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:rgba(246,241,230,.35); padding:8px 12px;}
+.nav-item{display:flex; align-items:center; gap:12px; padding:10px 12px; border-radius:5px; cursor:pointer; font-size:13.5px; font-weight:600; color:rgba(246,241,230,.72); transition:background .2s ease;}
+.nav-item:hover{background:rgba(255,255,255,.05); color:#fff;}
+.nav-item.active{background:var(--gold); color:var(--forest-deep);}
+.nav-item .dot{width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.6;}
+.sidebar-foot{margin-top:auto; padding:18px 24px; border-top:1px solid rgba(255,255,255,.08); font-size:12px; color:rgba(246,241,230,.55);}
+
+.main{margin-left:var(--sidebar-w); flex:1; padding:28px 36px 60px;}
+.topbar{display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;}
+.topbar h1{font-size:24px; color:var(--forest);}
+.topbar .sub{font-size:13px; color:#82806f; margin-top:4px;}
+.top-actions{display:flex; gap:10px; align-items:center;}
+.range-pills{display:flex; background:#fff; border:1px solid var(--line); border-radius:6px; overflow:hidden;}
+.range-pills button{padding:8px 14px; font-size:12.5px; font-weight:600; border:none; background:transparent; cursor:pointer; color:#6b665c;}
+.range-pills button.active{background:var(--forest); color:#fff;}
+.btn{font-family:'Manrope'; font-weight:700; font-size:13px; padding:10px 18px; border-radius:5px; border:1px solid var(--line); background:#fff; cursor:pointer; display:inline-flex; align-items:center; gap:8px;}
+.btn.primary{background:var(--forest); color:#fff; border-color:var(--forest);}
+
+.view{display:none;}
+.view.active{display:block;}
+
+/* KPI GRID */
+.kpi-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:28px;}
+.kpi-card{background:#fff; border:1px solid var(--line); border-radius:8px; padding:20px;}
+.kpi-card .lab{font-size:11.5px; color:#8a8578; font-weight:700; text-transform:uppercase; letter-spacing:.03em;}
+.kpi-card .val{font-family:'Fraunces',serif; font-size:32px; color:var(--forest); margin-top:8px;}
+.kpi-card .delta{font-size:12px; margin-top:6px; font-weight:700;}
+.delta.up{color:var(--ok);} .delta.down{color:var(--danger);}
+@media(max-width:1300px){ .kpi-grid{grid-template-columns:repeat(3,1fr);} }
+
+.panel{background:#fff; border:1px solid var(--line); border-radius:10px; padding:24px; margin-bottom:20px;}
+.panel-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;}
+.panel-head h3{font-size:17px; color:var(--forest);}
+.grid-2{display:grid; grid-template-columns:1.4fr 1fr; gap:20px;}
+@media(max-width:1100px){ .grid-2{grid-template-columns:1fr;} }
+
+/* PIPELINE */
+.pipeline{display:grid; grid-template-columns:repeat(6,1fr); gap:12px; overflow-x:auto;}
+.pl-col{background:var(--ivory); border-radius:8px; padding:12px; min-height:340px;}
+.pl-col h4{font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; color:var(--forest); display:flex; justify-content:space-between; margin-bottom:12px; font-family:'Space Grotesk',monospace;}
+.pl-col h4 b{background:var(--gold); color:#fff; border-radius:20px; padding:1px 8px; font-size:10.5px;}
+.pl-card{background:#fff; border:1px solid var(--line); border-radius:6px; padding:12px; margin-bottom:10px; cursor:grab; font-size:12.5px;}
+.pl-card:active{cursor:grabbing;}
+.pl-card b{display:block; font-size:13.5px; color:var(--forest); margin-bottom:4px;}
+.pl-card .pos{color:#8a8578; font-size:11.5px;}
+.pl-card .tags{display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;}
+.pl-card .tag{background:var(--ivory); font-size:10px; padding:2px 7px; border-radius:10px; color:#6b665c;}
+.pl-col.drag-over{outline:2px dashed var(--gold); outline-offset:-4px;}
+
+/* TABLE */
+table{width:100%; border-collapse:collapse; font-size:13.5px;}
+th{text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:.04em; color:#8a8578; padding:10px 12px; border-bottom:1px solid var(--line);}
+td{padding:12px; border-bottom:1px solid var(--line); vertical-align:middle;}
+tr:hover td{background:var(--ivory);}
+.avatar{width:30px; height:30px; border-radius:50%; background:var(--forest); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; margin-right:10px;}
+.badge{padding:4px 10px; border-radius:20px; font-size:11px; font-weight:700; display:inline-block;}
+.badge.new{background:#E8EFEA; color:var(--ok);}
+.badge.review{background:#EFEAE0; color:var(--warn);}
+.badge.shortlisted{background:#E6EDF6; color:var(--info);}
+.badge.interview{background:#F1E7DA; color:var(--gold);}
+.badge.offer{background:#E9E3F5; color:#6B4FA0;}
+.badge.hired{background:#E1EFE6; color:var(--ok);}
+.badge.rejected{background:#F5E4E1; color:var(--danger);}
+.table-toolbar{display:flex; justify-content:space-between; margin-bottom:16px; gap:12px; flex-wrap:wrap;}
+.table-toolbar input, .table-toolbar select{padding:9px 12px; border:1px solid var(--line); border-radius:6px; font-family:'Manrope'; font-size:13px;}
+
+.tasks-list{display:flex; flex-direction:column; gap:10px;}
+.task-item{display:flex; gap:12px; align-items:flex-start; padding:12px; border:1px solid var(--line); border-radius:6px;}
+.task-item input{margin-top:3px;}
+.task-item b{font-size:13px; display:block;}
+.task-item span{font-size:11.5px; color:#8a8578;}
+.priority{font-size:10px; padding:2px 8px; border-radius:10px; font-weight:700;}
+.priority.high{background:#F5E4E1; color:var(--danger);}
+.priority.med{background:#EFEAE0; color:var(--warn);}
+.priority.low{background:#E8EFEA; color:var(--ok);}
+
+.chart-box{position:relative; height:260px;}
+.charts-row{display:grid; grid-template-columns:1.5fr 1fr; gap:20px;}
+@media(max-width:1100px){.charts-row{grid-template-columns:1fr;}}
+
+.candidate-detail{display:none; position:fixed; inset:0; background:rgba(14,20,17,.5); z-index:100; align-items:center; justify-content:center;}
+.candidate-detail.active{display:flex;}
+.cd-box{background:#fff; width:min(760px,92vw); max-height:88vh; overflow-y:auto; border-radius:10px; padding:32px;}
+.cd-close{float:right; cursor:pointer; font-size:20px; color:#8a8578;}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand"><b>PBIS Careers</b><span>HR Admin Console</span></div>
+    <div class="nav-group">
+      <div class="label">Recruitment</div>
+      <div class="nav-item active" data-view="overview"><span class="dot"></span>Overview</div>
+      <div class="nav-item" data-view="applications"><span class="dot"></span>Applications</div>
+      <div class="nav-item" data-view="jobs"><span class="dot"></span>Job Openings</div>
+      <div class="nav-item" data-view="talent"><span class="dot"></span>Talent Pool</div>
+      <div class="nav-item" data-view="interviews"><span class="dot"></span>Interviews</div>
+      <div class="nav-item" data-view="tasks"><span class="dot"></span>Follow-Ups</div>
+      <div class="nav-item" data-view="emails"><span class="dot"></span>Emails</div>
+    </div>
+    <div class="nav-group">
+      <div class="label">Insights</div>
+      <div class="nav-item" data-view="analytics"><span class="dot"></span>Analytics</div>
+      <div class="nav-item" data-view="reports"><span class="dot"></span>Reports</div>
+    </div>
+    <div class="nav-group">
+      <div class="label">Organization</div>
+      <div class="nav-item" data-view="team"><span class="dot"></span>Team</div>
+      <div class="nav-item" data-view="settings"><span class="dot"></span>Settings</div>
+    </div>
+    <div class="sidebar-foot">Signed in as<br><b style="color:#fff;">HR Manager</b></div>
+  </aside>
+
+  <main class="main">
+    <!-- OVERVIEW -->
+    <div class="view active" id="view-overview">
+      <div class="topbar">
+        <div><h1>Overview</h1><div class="sub">Recruitment performance across PBIS · both campuses</div></div>
+        <div class="top-actions">
+          <div class="range-pills">
+            <button>Today</button><button>7d</button><button class="active">30d</button><button>90d</button><button>Year</button>
+          </div>
+          <button class="btn primary">+ New Job Opening</button>
+        </div>
+      </div>
+
+      <div class="kpi-grid" id="kpiGrid"></div>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-head"><h3>Applications Over Time</h3><span class="mono" style="font-size:11px; color:#8a8578;">LAST 30 DAYS</span></div>
+          <div class="chart-box"><canvas id="chartApplications"></canvas></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>My Tasks Today</h3></div>
+          <div class="tasks-list" id="miniTasks"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h3>Recruitment Pipeline</h3><span class="mono" style="font-size:11px; color:#8a8578;">DRAG CANDIDATES BETWEEN STAGES</span></div>
+        <div class="pipeline" id="pipeline"></div>
+      </div>
+    </div>
+
+    <!-- APPLICATIONS -->
+    <div class="view" id="view-applications">
+      <div class="topbar"><div><h1>Applications</h1><div class="sub">All candidate applications across PBIS Careers</div></div><button class="btn primary">Export</button></div>
+      <div class="panel">
+        <div class="table-toolbar">
+          <input type="text" placeholder="Search candidates..." style="min-width:240px;">
+          <div style="display:flex; gap:8px;">
+            <select><option>All Positions</option></select>
+            <select><option>All Campuses</option></select>
+            <select><option>All Statuses</option></select>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th><input type="checkbox"></th><th>Candidate</th><th>Position</th><th>Campus</th><th>Applied</th><th>Experience</th><th>Status</th><th>Assigned HR</th><th>Next Action</th></tr></thead>
+          <tbody id="applicationsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- JOBS -->
+    <div class="view" id="view-jobs">
+      <div class="topbar"><div><h1>Job Openings</h1><div class="sub">Manage active, draft, and archived vacancies</div></div><button class="btn primary">+ New Job Opening</button></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Job Title</th><th>Department</th><th>Campus</th><th>Type</th><th>Applications</th><th>Deadline</th><th>Status</th><th></th></tr></thead>
+          <tbody id="jobsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TALENT POOL -->
+    <div class="view" id="view-talent">
+      <div class="topbar"><div><h1>Talent Pool</h1><div class="sub">Candidates awaiting a matching opportunity</div></div><button class="btn primary">Export</button></div>
+      <div class="panel">
+        <div class="table-toolbar"><input type="text" placeholder="Search talent pool..." style="min-width:240px;"><select><option>All Roles</option></select></div>
+        <table>
+          <thead><tr><th>Candidate</th><th>Preferred Role</th><th>Campus</th><th>Experience</th><th>Joined</th><th></th></tr></thead>
+          <tbody id="talentBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- INTERVIEWS -->
+    <div class="view" id="view-interviews">
+      <div class="topbar"><div><h1>Interviews</h1><div class="sub">Scheduled and upcoming candidate interviews</div></div><button class="btn primary">+ Schedule Interview</button></div>
+      <div class="panel">
+        <table>
+          <thead><tr><th>Candidate</th><th>Position</th><th>Interviewer</th><th>Date</th><th>Time</th><th>Format</th><th>Status</th></tr></thead>
+          <tbody id="interviewsBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TASKS -->
+    <div class="view" id="view-tasks">
+      <div class="topbar"><div><h1>Follow-Ups</h1><div class="sub">Tasks assigned to the HR team</div></div><button class="btn primary">+ New Task</button></div>
+      <div class="panel"><div class="tasks-list" id="tasksFull"></div></div>
+    </div>
+
+    <!-- EMAILS -->
+    <div class="view" id="view-emails">
+      <div class="topbar"><div><h1>Email Templates</h1><div class="sub">PBIS-branded candidate communication</div></div><button class="btn primary">+ New Template</button></div>
+      <div class="panel">
+        <table><thead><tr><th>Template</th><th>Trigger</th><th>Last Updated</th><th></th></tr></thead><tbody id="emailsBody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div class="view" id="view-analytics">
+      <div class="topbar"><div><h1>Recruitment Analytics</h1><div class="sub">Funnel performance, sources, and time-to-hire</div></div><button class="btn primary">Export Report</button></div>
+      <div class="charts-row">
+        <div class="panel"><div class="panel-head"><h3>Applications by Department</h3></div><div class="chart-box"><canvas id="chartDept"></canvas></div></div>
+        <div class="panel"><div class="panel-head"><h3>Recruitment Sources</h3></div><div class="chart-box"><canvas id="chartSource"></canvas></div></div>
+      </div>
+      <div class="panel"><div class="panel-head"><h3>Hiring Funnel</h3></div><div class="chart-box"><canvas id="chartFunnel"></canvas></div></div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="kpi-card"><div class="lab">Avg. Time to Hire</div><div class="val">27<span style="font-size:16px;">d</span></div></div>
+        <div class="kpi-card"><div class="lab">Interview → Hire Ratio</div><div class="val">34%</div></div>
+        <div class="kpi-card"><div class="lab">Offer Acceptance</div><div class="val">88%</div></div>
+        <div class="kpi-card"><div class="lab">Talent Pool Growth</div><div class="val">+19%</div></div>
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="view" id="view-reports">
+      <div class="topbar"><div><h1>Reports</h1><div class="sub">Generate and export recruitment reports</div></div></div>
+      <div class="panel">
+        <table><thead><tr><th>Report</th><th>Period</th><th>Format</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Monthly Recruitment Summary</td><td>July 2026</td><td>PDF / CSV</td><td><button class="btn">Generate</button></td></tr>
+          <tr><td>Departmental Hiring Report</td><td>Q3 2026</td><td>Excel</td><td><button class="btn">Generate</button></td></tr>
+          <tr><td>Audit Log Export</td><td>All Time</td><td>CSV</td><td><button class="btn">Generate</button></td></tr>
+        </tbody></table>
+      </div>
+    </div>
+
+    <!-- TEAM -->
+    <div class="view" id="view-team">
+      <div class="topbar"><div><h1>Team</h1><div class="sub">Manage HR staff access and roles</div></div><button class="btn primary">+ Invite User</button></div>
+      <div class="panel">
+        <table><thead><tr><th>Name</th><th>Role</th><th>Assigned Candidates</th><th>Status</th></tr></thead>
+        <tbody id="teamBody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="view" id="view-settings">
+      <div class="topbar"><div><h1>Settings</h1><div class="sub">Configuration, integrations, and permissions</div></div></div>
+      <div class="panel">
+        <table><tbody>
+          <tr><td style="font-weight:700;">Data Layer</td><td>Google Sheets (Applications, Candidates, Jobs, TalentPool, Interviews, Emails, Tasks, Users, Analytics, AuditLogs, Settings)</td></tr>
+          <tr><td style="font-weight:700;">Storage</td><td>Google Drive — PBIS Recruitment / {Year} / {Job Title} / {Candidate Name}</td></tr>
+          <tr><td style="font-weight:700;">Automation</td><td>Google Apps Script — ID generation, confirmation emails, status emails, reminders</td></tr>
+          <tr><td style="font-weight:700;">Authentication</td><td>Google Workspace SSO (role-based: HR Staff / HR Manager / Administrator)</td></tr>
+        </tbody></table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="candidate-detail" id="candidateDetail">
+  <div class="cd-box">
+    <span class="cd-close" onclick="closeCandidate()">×</span>
+    <div id="candidateDetailBody"></div>
+  </div>
+</div>
+
+<script>
+/* ---------------- MOCK DATA ---------------- */
+const KPIS = [
+  {lab:'Total Applications', val:214, delta:'+12% vs prior period', up:true},
+  {lab:'New Applications', val:18, delta:'+4 today', up:true},
+  {lab:'Open Positions', val:6, delta:'2 closing soon', up:null},
+  {lab:'Under Review', val:34, delta:'−6 this week', up:false},
+  {lab:'Shortlisted', val:21, delta:'+5 this week', up:true},
+  {lab:'Interviews', val:12, delta:'4 this week', up:null},
+  {lab:'Offers', val:5, delta:'2 pending response', up:null},
+  {lab:'Hired', val:9, delta:'YTD', up:true},
+  {lab:'Talent Pool', val:167, delta:'+19% growth', up:true},
+];
+
+const CANDIDATES = [
+  {name:'Sarah Mitchell', pos:'Secondary English Teacher', campus:'Secondary', applied:'2026-07-20', exp:'4 yrs', status:'shortlisted', hr:'A. Bounmy', next:'Schedule interview'},
+  {name:'David Chen', pos:'Head of Mathematics', campus:'Secondary', applied:'2026-07-18', exp:'8 yrs', status:'interview', hr:'S. Vong', next:'Send confirmation'},
+  {name:'Priya Nair', pos:'Primary Homeroom Teacher', campus:'Primary', applied:'2026-07-19', exp:'2 yrs', status:'review', hr:'A. Bounmy', next:'Review CV'},
+  {name:'Thomas Reed', pos:'IT Systems Administrator', campus:'Both', applied:'2026-07-21', exp:'5 yrs', status:'new', hr:'Unassigned', next:'Assign HR'},
+  {name:'Amara Okafor', pos:'School Counsellor', campus:'Secondary', applied:'2026-07-15', exp:'6 yrs', status:'offer', hr:'S. Vong', next:'Await response'},
+  {name:'Liam Anderson', pos:'Admissions Officer', campus:'Primary', applied:'2026-07-12', exp:'1 yr', status:'rejected', hr:'A. Bounmy', next:'Send outcome email'},
+  {name:'Nok Sengdara', pos:'Secondary English Teacher', campus:'Secondary', applied:'2026-07-22', exp:'3 yrs', status:'new', hr:'Unassigned', next:'Assign HR'},
+  {name:'Grace Palmer', pos:'Primary Homeroom Teacher', campus:'Primary', applied:'2026-07-11', exp:'7 yrs', status:'hired', hr:'S. Vong', next:'Onboarding'},
+];
+
+const JOB_ROWS = [
+  {title:'Secondary English Teacher', dept:'Secondary Academic', campus:'Secondary', type:'Full-Time', apps:38, deadline:'20 Aug 2026', status:'Published'},
+  {title:'Primary Homeroom Teacher', dept:'Primary Academic', campus:'Primary', type:'Full-Time', apps:29, deadline:'15 Aug 2026', status:'Published'},
+  {title:'Head of Mathematics', dept:'Secondary Academic', campus:'Secondary', type:'Full-Time', apps:14, deadline:'05 Aug 2026', status:'Closing Soon'},
+  {title:'School Counsellor', dept:'Pastoral & Wellbeing', campus:'Secondary', type:'Full-Time', apps:22, deadline:'01 Sep 2026', status:'Published'},
+  {title:'IT Systems Administrator', dept:'Operations & IT', campus:'Both', type:'Full-Time', apps:11, deadline:'25 Aug 2026', status:'Published'},
+  {title:'Admissions Officer', dept:'Admissions & Marketing', campus:'Primary', type:'Part-Time', apps:9, deadline:'30 Jul 2026', status:'Closing Soon'},
+];
+
+const TALENT = [
+  {name:'Melissa Fournier', role:'Secondary Science Teacher', campus:'Secondary', exp:'5 yrs', joined:'2026-06-02'},
+  {name:'Bounthavy Xayavong', role:'PE Teacher', campus:'Primary', exp:'3 yrs', joined:'2026-06-18'},
+  {name:'James Whitfield', role:'Finance Officer', campus:'Both', exp:'6 yrs', joined:'2026-07-01'},
+];
+
+const INTERVIEWS = [
+  {name:'David Chen', pos:'Head of Mathematics', interviewer:'Dr. Kittisak', date:'28 Jul 2026', time:'10:00 AM', format:'On-Campus', status:'Scheduled'},
+  {name:'Sarah Mitchell', pos:'Secondary English Teacher', interviewer:'Ms. Vongsa', date:'29 Jul 2026', time:'2:00 PM', format:'Video Call', status:'Scheduled'},
+  {name:'Amara Okafor', pos:'School Counsellor', interviewer:'Mr. Bounmy', date:'25 Jul 2026', time:'11:30 AM', format:'On-Campus', status:'Completed'},
+];
+
+const TASKS = [
+  {t:'Follow up with Thomas Reed', c:'Thomas Reed', due:'Today', pri:'high'},
+  {t:'Schedule interview — Sarah Mitchell', c:'Sarah Mitchell', due:'Today', pri:'high'},
+  {t:'Request additional documents', c:'Priya Nair', due:'Tomorrow', pri:'med'},
+  {t:'Send unsuccessful outcome email', c:'Liam Anderson', due:'Tomorrow', pri:'med'},
+  {t:'Review CV backlog — Admissions', c:'—', due:'This week', pri:'low'},
+];
+
+const EMAILS = [
+  {n:'Application Received', trig:'On submission', updated:'2 Jul 2026'},
+  {n:'Under Review', trig:'Manual / status change', updated:'2 Jul 2026'},
+  {n:'Shortlisted', trig:'Status change', updated:'5 Jul 2026'},
+  {n:'Interview Invitation', trig:'Manual', updated:'5 Jul 2026'},
+  {n:'Successful Application', trig:'Manual', updated:'1 Jul 2026'},
+  {n:'Unsuccessful Application', trig:'Manual', updated:'1 Jul 2026'},
+];
+
+const TEAM = [
+  {name:'Ammy Bounmy', role:'HR Staff', assigned:24, status:'Active'},
+  {name:'Somchai Vong', role:'HR Staff', assigned:19, status:'Active'},
+  {name:'Kate Sullivan', role:'HR Manager', assigned:'—', status:'Active'},
+  {name:'IT Administrator', role:'Administrator', assigned:'—', status:'Active'},
+];
+
+const STAGES = ['New','Under Review','Shortlisted','Interview','Offer','Hired'];
+const statusToStage = {new:'New', review:'Under Review', shortlisted:'Shortlisted', interview:'Interview', offer:'Offer', hired:'Hired', rejected:'New'};
+
+/* ---------------- NAV ---------------- */
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+    document.getElementById('view-'+item.dataset.view).classList.add('active');
+  });
+});
+document.querySelectorAll('.range-pills button').forEach(b=>{
+  b.addEventListener('click', ()=>{ document.querySelectorAll('.range-pills button').forEach(x=>x.classList.remove('active')); b.classList.add('active'); });
+});
+
+/* ---------------- RENDER KPIs ---------------- */
+kpiGrid.innerHTML = KPIS.map(k=>`
+  <div class="kpi-card">
+    <div class="lab">${k.lab}</div>
+    <div class="val" data-target="${k.val}">0</div>
+    <div class="delta ${k.up===true?'up':k.up===false?'down':''}">${k.delta}</div>
+  </div>
+`).join('');
+// animate counters
+document.querySelectorAll('.kpi-card .val').forEach(el=>{
+  const target = +el.dataset.target;
+  let cur = 0; const step = Math.max(1, Math.round(target/30));
+  const t = setInterval(()=>{ cur += step; if(cur>=target){cur=target; clearInterval(t);} el.textContent = cur; }, 20);
+});
+
+/* ---------------- PIPELINE ---------------- */
+function renderPipeline(){
+  pipeline.innerHTML = STAGES.map(stage=>{
+    const items = CANDIDATES.filter(c=> statusToStage[c.status]===stage && c.status!=='rejected');
+    return `<div class="pl-col" data-stage="${stage}" ondragover="event.preventDefault(); this.classList.add('drag-over')" ondragleave="this.classList.remove('drag-over')" ondrop="dropCandidate(event,'${stage}')">
+      <h4>${stage} <b>${items.length}</b></h4>
+      ${items.map(c=>`
+        <div class="pl-card" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${c.name}')" onclick="openCandidate('${c.name}')">
+          <b>${c.name}</b><div class="pos">${c.pos}</div>
+          <div class="tags"><span class="tag">${c.campus}</span><span class="tag">${c.exp}</span></div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+function dropCandidate(e, stage){
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const name = e.dataTransfer.getData('text/plain');
+  const cand = CANDIDATES.find(c=>c.name===name);
+  if(cand){
+    const key = Object.keys(statusToStage).find(k=>statusToStage[k]===stage) || cand.status;
+    cand.status = key;
+    renderPipeline();
+    renderApplications();
+    // In production: PATCH to backend -> update DB + Google Sheet + audit log
+  }
+}
+renderPipeline();
+
+/* ---------------- APPLICATIONS TABLE ---------------- */
+function initials(n){ return n.split(' ').map(p=>p[0]).join('').slice(0,2).toUpperCase(); }
+function renderApplications(){
+  applicationsBody.innerHTML = CANDIDATES.map(c=>`
+    <tr onclick="openCandidate('${c.name}')" style="cursor:pointer;">
+      <td onclick="event.stopPropagation()"><input type="checkbox"></td>
+      <td><span class="avatar">${initials(c.name)}</span>${c.name}</td>
+      <td>${c.pos}</td><td>${c.campus}</td><td>${formatDate(c.applied)}</td><td>${c.exp}</td>
+      <td><span class="badge ${c.status}">${statusToStage[c.status]||c.status}</span></td>
+      <td>${c.hr}</td><td>${c.next}</td>
+    </tr>
+  `).join('');
+}
+renderApplications();
+
+function formatDate(d){ return new Date(d).toLocaleDateString('en-GB',{day:'numeric',month:'short'}); }
+
+/* ---------------- JOBS TABLE ---------------- */
+jobsBody.innerHTML = JOB_ROWS.map(j=>`
+  <tr><td style="font-weight:700; color:var(--forest);">${j.title}</td><td>${j.dept}</td><td>${j.campus}</td><td>${j.type}</td><td>${j.apps}</td><td>${j.deadline}</td>
+  <td><span class="badge ${j.status==='Closing Soon'?'interview':'new'}">${j.status}</span></td><td><button class="btn">Edit</button></td></tr>
+`).join('');
+
+/* ---------------- TALENT POOL ---------------- */
+talentBody.innerHTML = TALENT.map(t=>`
+  <tr><td><span class="avatar">${initials(t.name)}</span>${t.name}</td><td>${t.role}</td><td>${t.campus}</td><td>${t.exp}</td><td>${formatDate(t.joined)}</td><td><button class="btn">View</button></td></tr>
+`).join('');
+
+/* ---------------- INTERVIEWS ---------------- */
+interviewsBody.innerHTML = INTERVIEWS.map(i=>`
+  <tr><td>${i.name}</td><td>${i.pos}</td><td>${i.interviewer}</td><td>${i.date}</td><td>${i.time}</td><td>${i.format}</td>
+  <td><span class="badge ${i.status==='Completed'?'hired':'shortlisted'}">${i.status}</span></td></tr>
+`).join('');
+
+/* ---------------- TASKS ---------------- */
+function taskHTML(t){
+  return `<div class="task-item"><input type="checkbox"><div><b>${t.t}</b><span>${t.c} · Due ${t.due}</span></div><span class="priority ${t.pri}" style="margin-left:auto;">${t.pri.toUpperCase()}</span></div>`;
+}
+miniTasks.innerHTML = TASKS.slice(0,4).map(taskHTML).join('');
+tasksFull.innerHTML = TASKS.map(taskHTML).join('');
+
+/* ---------------- EMAILS ---------------- */
+emailsBody.innerHTML = EMAILS.map(e=>`<tr><td style="font-weight:700;">${e.n}</td><td>${e.trig}</td><td>${e.updated}</td><td><button class="btn">Edit</button></td></tr>`).join('');
+
+/* ---------------- TEAM ---------------- */
+teamBody.innerHTML = TEAM.map(t=>`<tr><td><span class="avatar">${initials(t.name)}</span>${t.name}</td><td>${t.role}</td><td>${t.assigned}</td><td><span class="badge hired">${t.status}</span></td></tr>`).join('');
+
+/* ---------------- CANDIDATE DETAIL ---------------- */
+function openCandidate(name){
+  const c = CANDIDATES.find(x=>x.name===name);
+  if(!c) return;
+  candidateDetailBody.innerHTML = `
+    <h2 style="color:var(--forest);">${c.name}</h2>
+    <p style="color:#8a8578; margin-top:4px;">${c.pos} · ${c.campus} Campus</p>
+    <div style="display:flex; gap:8px; margin:16px 0;"><span class="badge ${c.status}">${statusToStage[c.status]}</span><span class="badge new">${c.exp} experience</span></div>
+    <div class="panel" style="padding:16px; margin:0 0 14px;"><b style="font-size:12px; text-transform:uppercase; color:var(--gold); letter-spacing:.04em;">Recruitment Timeline</b>
+      <div style="margin-top:10px; font-size:13px; color:#4b473f; line-height:2;">
+        Application Received — ${formatDate(c.applied)}<br>Assigned to ${c.hr}<br>Current stage: ${statusToStage[c.status]}
+      </div>
+    </div>
+    <div class="panel" style="padding:16px; margin:0 0 14px;"><b style="font-size:12px; text-transform:uppercase; color:var(--gold); letter-spacing:.04em;">HR Notes</b>
+      <div style="margin-top:10px; font-size:13px; color:#4b473f;">Strong communication skills observed at initial screening. Awaiting reference checks.</div>
+    </div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;">
+      <button class="btn primary">View CV</button><button class="btn">Send Email</button><button class="btn">Schedule Follow-Up</button><button class="btn">Change Status</button>
+    </div>
+  `;
+  candidateDetail.classList.add('active');
+}
+function closeCandidate(){ candidateDetail.classList.remove('active'); }
+
+/* ---------------- CHARTS ---------------- */
+const chartDefaults = { font:{family:'Manrope'}, color:'#6b665c' };
+Chart.defaults.font.family = 'Manrope';
+Chart.defaults.color = '#6b665c';
+
+new Chart(chartApplications, {
+  type:'line',
+  data:{ labels:['Jun 24','Jun 29','Jul 4','Jul 9','Jul 14','Jul 19','Jul 24'],
+    datasets:[{ label:'Applications', data:[12,19,14,27,22,31,26], borderColor:'#B68A4E', backgroundColor:'rgba(182,138,78,0.12)', fill:true, tension:.4, pointRadius:3 }]},
+  options:{ plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true, grid:{color:'#EFE9DB'}}, x:{grid:{display:false}} } }
+});
+
+new Chart(chartDept, {
+  type:'bar',
+  data:{ labels:['Secondary Academic','Primary Academic','Pastoral & Wellbeing','Operations & IT','Admissions & Marketing'],
+    datasets:[{ data:[74,52,22,11,9], backgroundColor:'#16302A', borderRadius:4 }]},
+  options:{ indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#EFE9DB'}}, y:{grid:{display:false}}} }
+});
+
+new Chart(chartSource, {
+  type:'doughnut',
+  data:{ labels:['PBIS Careers','LinkedIn','Facebook','Referral','Job Boards','Other'],
+    datasets:[{ data:[38,26,14,12,7,3], backgroundColor:['#16302A','#B68A4E','#24443A','#D9BD8C','#8a8578','#E7E1D3'] }]},
+  options:{ plugins:{legend:{position:'bottom', labels:{boxWidth:10, padding:14, font:{size:11}}}} }
+});
+
+new Chart(chartFunnel, {
+  type:'bar',
+  data:{ labels:['Applications','Under Review','Shortlisted','Interview','Offer','Hired'],
+    datasets:[{ data:[214,142,68,34,12,9], backgroundColor:'#B68A4E', borderRadius:4 }]},
+  options:{ plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, grid:{color:'#EFE9DB'}}, x:{grid:{display:false}}} }
+});
+</script>
+</body>
+</html>
