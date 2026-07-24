@@ -73,6 +73,25 @@ header.site-nav:not(.scrolled) .brand, header.site-nav:not(.scrolled) .nav-links
 .nav-cta{display:flex; gap:10px;}
 @media (max-width:900px){ .nav-links{display:none;} }
 
+/* MOBILE MENU */
+.nav-toggle{display:none; flex-direction:column; justify-content:center; gap:5px; width:38px; height:38px; background:transparent; border:none; cursor:pointer; padding:0;}
+.nav-toggle span{display:block; width:22px; height:2px; background:currentColor; border-radius:2px; transition:transform .3s ease, opacity .3s ease;}
+header.site-nav:not(.scrolled) .nav-toggle{color:#fff;}
+header.site-nav.scrolled .nav-toggle{color:var(--forest);}
+@media (max-width:900px){ .nav-toggle{display:flex;} }
+.mobile-menu-overlay{position:fixed; inset:0; background:rgba(14,20,17,.6); z-index:150; opacity:0; pointer-events:none; transition:opacity .3s ease;}
+.mobile-menu-overlay.active{opacity:1; pointer-events:auto;}
+.mobile-menu{
+  position:fixed; top:0; right:0; bottom:0; width:min(320px,84vw); background:var(--forest-deep); z-index:151;
+  transform:translateX(100%); transition:transform .4s cubic-bezier(.2,.9,.2,1); padding:24px 26px; display:flex; flex-direction:column;
+  box-shadow:-20px 0 60px rgba(0,0,0,.35);
+}
+.mobile-menu.active{transform:translateX(0);}
+.mobile-menu-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:28px;}
+.mobile-menu-head .nav-logo{height:44px;}
+.mobile-menu-close{width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,.08); border:none; color:#fff; display:flex; align-items:center; justify-content:center; cursor:pointer;}
+.mobile-link{display:block; padding:16px 4px; color:#fff; font-size:16px; font-weight:600; border-bottom:1px solid rgba(255,255,255,.1);}
+
 /* BUTTONS */
 .btn{
   position:relative; display:inline-flex; align-items:center; gap:10px;
@@ -351,8 +370,27 @@ footer{background:var(--forest-deep); color:rgba(246,241,230,.6); padding:56px 0
     <div class="nav-cta">
       <a class="btn btn-primary" href="#opportunities"><span>Explore Opportunities</span><span class="arrow">→</span></a>
     </div>
+    <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobileMenu">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+<nav class="mobile-menu" id="mobileMenu" aria-label="Mobile navigation">
+  <div class="mobile-menu-head">
+    <img class="nav-logo" src="" id="mobileMenuLogo" alt="PBIS 25th Anniversary logo">
+    <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Close menu">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <a href="#why" class="mobile-link">Why Join PBIS</a>
+  <a href="#life" class="mobile-link">Life at PBIS</a>
+  <a href="#opportunities" class="mobile-link">Current Opportunities</a>
+  <a href="#talent" class="mobile-link">Talent Community</a>
+  <a href="#" class="mobile-link" onclick="openTracker(); closeMobileMenu(); return false;">Track Application</a>
+  <a class="btn btn-primary btn-block" href="#opportunities" style="margin-top:20px;" onclick="closeMobileMenu()"><span>Explore Opportunities</span><span class="arrow">→</span></a>
+</nav>
 
 <section class="hero" id="top">
   <div class="hero-inner">
@@ -536,7 +574,7 @@ footer{background:var(--forest-deep); color:rgba(246,241,230,.6); padding:56px 0
 <div class="drawer" id="appDrawer">
   <div class="drawer-head">
     <div><div class="eyebrow" style="color:var(--gold-soft); margin-bottom:8px;">Apply to PBIS</div><h3 style="color:#fff; font-size:20px;" id="appDrawerTitle">Application</h3></div>
-    <div class="drawer-close" onclick="closeDrawer('appDrawer')">×</div>
+    <div class="drawer-close" onclick="attemptCloseDrawer('appDrawer')">×</div>
   </div>
   <div class="drawer-body">
     <div class="app-progress" id="appProgress"></div>
@@ -671,6 +709,20 @@ const JOBS = [
     qualifications:['Experience in education admissions preferred'],
     experience:'1+ years',
     offer:['Competitive salary','Flexible working arrangements']},
+  {id:'J-007', title:'Early Years Teacher', dept:'Early Years', campus:'Early Years Campus', type:'Full-Time', location:'Vientiane, Laos', posted:'2026-07-20', deadline:'2026-09-05', level:'Entry-Level', status:'Applications Open',
+    about:'Nurture our youngest learners in a warm, play-based Early Years setting, building the foundations for a lifelong love of learning.',
+    responsibilities:['Plan and deliver an EYFS-aligned play-based curriculum','Create a safe, nurturing, and stimulating classroom environment','Track early development milestones and share progress with parents','Work closely with Early Years support staff and specialists'],
+    requirements:['Early Childhood Education or related qualification','Experience working with children aged 2–5'],
+    qualifications:['EYFS or Montessori training a plus'],
+    experience:'1+ years',
+    offer:['Competitive salary','Housing allowance','Health insurance','Tuition discount for dependents']},
+  {id:'J-008', title:'Finance Officer', dept:'Finance & Administration', campus:'Both Campuses', type:'Full-Time', location:'Vientiane, Laos', posted:'2026-07-16', deadline:'2026-08-28', level:'Mid-Level', status:'Applications Open',
+    about:'Support PBIS\'s day-to-day financial operations across both campuses, from invoicing to budget reporting.',
+    responsibilities:['Process invoices, payments, and fee collection','Maintain accurate financial records across campuses','Assist with annual budgeting and reporting','Liaise with vendors and the wider Operations team'],
+    requirements:['Degree in Finance, Accounting, or related field','2+ years in a finance or administrative role'],
+    qualifications:['Experience with school fee management systems a plus'],
+    experience:'2+ years',
+    offer:['Competitive salary','Housing allowance','Professional development budget']},
 ];
 
 /* ---------------- BRAND ASSETS ----------------
@@ -685,6 +737,7 @@ document.addEventListener('DOMContentLoaded', () => {
   navLogoImg.src = LOGO_SMALL;
   footerLogoImg.src = LOGO_LARGE;
   confirmLogoImg.src = LOGO_LARGE;
+  mobileMenuLogo.src = LOGO_SMALL;
 });
 
 let currentAppJob = null;
@@ -844,33 +897,97 @@ function bindEvents(){
   document.querySelectorAll('.dropzone[data-target]').forEach(dz=>{
     dz.addEventListener('click', ()=> pickFile(dz.dataset.target));
   });
-  overlay.addEventListener('click', closeAllDrawers);
+  initDropzones();
+  overlay.addEventListener('click', attemptCloseAllDrawers);
   prevStepBtn.addEventListener('click', ()=> gotoStep(currentStep-1));
   nextStepBtn.addEventListener('click', handleNext);
 
   backToTop.addEventListener('click', ()=> window.scrollTo({top:0, behavior:'smooth'}));
   window.addEventListener('scroll', ()=> backToTop.classList.toggle('show', window.scrollY > window.innerHeight * 0.8), {passive:true});
+
+  navToggle.addEventListener('click', openMobileMenu);
+  mobileMenuClose.addEventListener('click', closeMobileMenu);
+  mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+  document.querySelectorAll('.mobile-link[href^="#"]').forEach(a => a.addEventListener('click', closeMobileMenu));
+
+  document.addEventListener('keydown', e => {
+    if(e.key !== 'Escape') return;
+    if(mobileMenu.classList.contains('active')){ closeMobileMenu(); return; }
+    const openDrawerEl = document.querySelector('.drawer.active');
+    if(openDrawerEl) attemptCloseDrawer(openDrawerEl.id);
+  });
 }
+
+function openMobileMenu(){
+  mobileMenu.classList.add('active');
+  mobileMenuOverlay.classList.add('active');
+  navToggle.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu(){
+  mobileMenu.classList.remove('active');
+  mobileMenuOverlay.classList.remove('active');
+  navToggle.setAttribute('aria-expanded', 'false');
+  if(!document.querySelector('.drawer.active')) document.body.style.overflow = '';
+}
+
+const ACCEPTED_CV_TYPES = ['.pdf','.doc','.docx'];
+const MAX_CV_SIZE_MB = 10;
 
 function pickFile(target){
   const input = document.createElement('input');
   input.type='file'; input.accept='.pdf,.doc,.docx';
-  input.onchange = e => {
-    const file = e.target.files[0];
-    if(!file) return;
-    uploadedFiles[target] = file;
-    const sizeKb = (file.size/1024).toFixed(0);
-    const html = `<div class="file-chip"><span>📄 ${file.name} · ${sizeKb} KB</span><span onclick="removeFile('${target}')" style="cursor:pointer; color:#a04a3d;">Remove</span></div>`;
-    if(target==='talent'){ talentFileChip.innerHTML = html; }
-    else { document.querySelector(`.file-out[data-out="${target}"]`).innerHTML = html; }
-    showToast('File uploaded successfully');
-  };
+  input.onchange = e => assignFile(target, e.target.files[0]);
   input.click();
 }
+
+function assignFile(target, file){
+  if(!file) return;
+  const ext = '.' + file.name.split('.').pop().toLowerCase();
+  if(!ACCEPTED_CV_TYPES.includes(ext)){
+    showToast('Please upload a PDF, DOC, or DOCX file');
+    return;
+  }
+  if(file.size > MAX_CV_SIZE_MB * 1024 * 1024){
+    showToast(`File is too large — please keep it under ${MAX_CV_SIZE_MB}MB`);
+    return;
+  }
+  uploadedFiles[target] = file;
+  const sizeKb = (file.size/1024).toFixed(0);
+  const html = `<div class="file-chip"><span>📄 ${file.name} · ${sizeKb} KB</span><span onclick="removeFile('${target}')" style="cursor:pointer; color:#a04a3d;">Remove</span></div>`;
+  if(target==='talent'){ talentFileChip.innerHTML = html; }
+  else { document.querySelector(`.file-out[data-out="${target}"]`).innerHTML = html; }
+  showToast('File uploaded successfully');
+}
+
 function removeFile(target){
   delete uploadedFiles[target];
   if(target==='talent'){ talentFileChip.innerHTML=''; }
   else { document.querySelector(`.file-out[data-out="${target}"]`).innerHTML=''; }
+}
+
+function initDropzones(){
+  const zones = [
+    { el: document.getElementById('talentDrop'), target: 'talent' },
+    ...Array.from(document.querySelectorAll('.dropzone[data-target]')).map(el => ({ el, target: el.dataset.target }))
+  ];
+  zones.forEach(({el, target}) => {
+    if(!el) return;
+    ['dragenter','dragover'].forEach(evt => el.addEventListener(evt, e => {
+      e.preventDefault(); e.stopPropagation();
+      el.classList.add('drag');
+    }));
+    ['dragleave','dragend'].forEach(evt => el.addEventListener(evt, e => {
+      e.preventDefault(); e.stopPropagation();
+      el.classList.remove('drag');
+    }));
+    el.addEventListener('drop', e => {
+      e.preventDefault(); e.stopPropagation();
+      el.classList.remove('drag');
+      const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      assignFile(target, file);
+    });
+  });
 }
 
 /* ---------------- JOB DETAIL DRAWER ---------------- */
@@ -1092,6 +1209,27 @@ function closeAllDrawers(){
   document.querySelectorAll('.drawer').forEach(d=>d.classList.remove('active'));
   overlay.classList.remove('active');
   document.body.style.overflow='';
+}
+
+function isApplicationFormDirty(){
+  if(currentStep > 1) return true;
+  if(uploadedFiles.cv || uploadedFiles.coverFile || uploadedFiles.portfolio) return true;
+  const fd = new FormData(applicationForm);
+  for(const [, value] of fd.entries()){ if(String(value).trim()) return true; }
+  return false;
+}
+function attemptCloseDrawer(id){
+  if(id === 'appDrawer' && isApplicationFormDirty()){
+    if(!confirm('Discard this application? Everything you\'ve entered so far will be lost.')) return;
+  }
+  closeDrawer(id);
+}
+function attemptCloseAllDrawers(){
+  const appOpen = document.getElementById('appDrawer').classList.contains('active');
+  if(appOpen && isApplicationFormDirty()){
+    if(!confirm('Discard this application? Everything you\'ve entered so far will be lost.')) return;
+  }
+  closeAllDrawers();
 }
 
 function showToast(msg){
