@@ -334,10 +334,10 @@ tr[tabindex]:focus-visible, .pl-card:focus-visible{outline:2px solid var(--gold)
       </div>
       <div class="panel"><div class="panel-head"><h3>Hiring Funnel</h3></div><div class="chart-box"><canvas id="chartFunnel"></canvas></div></div>
       <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr);">
-        <div class="kpi-card"><div class="lab">Avg. Time to Hire</div><div class="val">27<span style="font-size:16px;">d</span></div></div>
-        <div class="kpi-card"><div class="lab">Interview → Hire Ratio</div><div class="val">34%</div></div>
-        <div class="kpi-card"><div class="lab">Offer Acceptance</div><div class="val">88%</div></div>
-        <div class="kpi-card"><div class="lab">Talent Pool Growth</div><div class="val">+19%</div></div>
+        <div class="kpi-card"><div class="lab">Avg. Time to Hire</div><div class="val" id="acAvgTimeToHire">—</div></div>
+        <div class="kpi-card"><div class="lab">Interview → Hire Ratio</div><div class="val" id="acInterviewToHire">—</div></div>
+        <div class="kpi-card"><div class="lab">Offer Acceptance</div><div class="val" id="acOfferAcceptance">—</div></div>
+        <div class="kpi-card"><div class="lab">Talent Pool Growth</div><div class="val" id="acTalentGrowth">—</div></div>
       </div>
     </div>
 
@@ -550,78 +550,45 @@ function openConfirmModal(message, onConfirm, opts){
   }, opts.confirmLabel || 'Confirm');
 }
 
-/* ================= MOCK DATA ================= */
-const KPIS = [
-  {lab:'Total Applications', val:214, delta:'+12% vs prior period', up:true},
-  {lab:'New Applications', val:18, delta:'+4 today', up:true},
-  {lab:'Open Positions', val:6, delta:'2 closing soon', up:null},
-  {lab:'Under Review', val:34, delta:'−6 this week', up:false},
-  {lab:'Shortlisted', val:21, delta:'+5 this week', up:true},
-  {lab:'Interviews', val:12, delta:'4 this week', up:null},
-  {lab:'Offers', val:5, delta:'2 pending response', up:null},
-  {lab:'Hired', val:9, delta:'YTD', up:true},
-  {lab:'Talent Pool', val:167, delta:'+19% growth', up:true},
-];
+/* ================= LIVE DATA ================= (starts empty — populate via the UI or by wiring to Code.gs/the real Sheet) */
+let CANDIDATES = [];
+let JOB_ROWS = [];
+let TALENT = [];
+let INTERVIEWS = [];
+let TASKS = [];
 
-let CANDIDATES = [
-  {name:'Sarah Mitchell', email:'sarah.mitchell@email.com', pos:'Secondary English Teacher', campus:'Secondary Campus', applied:'2026-07-20', exp:'4 yrs', status:'shortlisted', hr:'A. Bounmy', next:'Schedule interview'},
-  {name:'David Chen', email:'david.chen@email.com', pos:'Head of Mathematics', campus:'Secondary Campus', applied:'2026-07-18', exp:'8 yrs', status:'interview', hr:'S. Vong', next:'Send confirmation'},
-  {name:'Priya Nair', email:'priya.nair@email.com', pos:'Primary Homeroom Teacher', campus:'Primary Campus', applied:'2026-07-19', exp:'2 yrs', status:'review', hr:'A. Bounmy', next:'Review CV'},
-  {name:'Thomas Reed', email:'thomas.reed@email.com', pos:'IT Systems Administrator', campus:'Both Campuses', applied:'2026-07-21', exp:'5 yrs', status:'new', hr:'Unassigned', next:'Assign HR'},
-  {name:'Amara Okafor', email:'amara.okafor@email.com', pos:'School Counsellor', campus:'Secondary Campus', applied:'2026-07-15', exp:'6 yrs', status:'offer', hr:'S. Vong', next:'Await response'},
-  {name:'Liam Anderson', email:'liam.anderson@email.com', pos:'Admissions Officer', campus:'Primary Campus', applied:'2026-07-12', exp:'1 yr', status:'rejected', hr:'A. Bounmy', next:'Send outcome email'},
-  {name:'Nok Sengdara', email:'nok.sengdara@email.com', pos:'Secondary English Teacher', campus:'Secondary Campus', applied:'2026-07-22', exp:'3 yrs', status:'new', hr:'Unassigned', next:'Assign HR'},
-  {name:'Grace Palmer', email:'grace.palmer@email.com', pos:'Primary Homeroom Teacher', campus:'Primary Campus', applied:'2026-07-11', exp:'7 yrs', status:'hired', hr:'S. Vong', next:'Onboarding'},
-  {name:'Isabelle Tran', email:'isabelle.tran@email.com', pos:'Early Years Teacher', campus:'Early Years Campus', applied:'2026-07-21', exp:'3 yrs', status:'review', hr:'Unassigned', next:'Review CV'},
-  {name:'Marcus Webb', email:'marcus.webb@email.com', pos:'Finance Officer', campus:'Both Campuses', applied:'2026-07-17', exp:'6 yrs', status:'new', hr:'Unassigned', next:'Assign HR'},
-];
-
-let JOB_ROWS = [
-  {title:'Secondary English Teacher', dept:'Secondary Academic', campus:'Secondary Campus', type:'Full-Time', apps:38, deadline:'20 Aug 2026', status:'Published'},
-  {title:'Primary Homeroom Teacher', dept:'Primary Academic', campus:'Primary Campus', type:'Full-Time', apps:29, deadline:'15 Aug 2026', status:'Published'},
-  {title:'Head of Mathematics', dept:'Secondary Academic', campus:'Secondary Campus', type:'Full-Time', apps:14, deadline:'05 Aug 2026', status:'Closing Soon'},
-  {title:'School Counsellor', dept:'Pastoral & Wellbeing', campus:'Secondary Campus', type:'Full-Time', apps:22, deadline:'01 Sep 2026', status:'Published'},
-  {title:'IT Systems Administrator', dept:'Operations & IT', campus:'Both Campuses', type:'Full-Time', apps:11, deadline:'25 Aug 2026', status:'Published'},
-  {title:'Admissions Officer', dept:'Admissions & Marketing', campus:'Primary Campus', type:'Part-Time', apps:9, deadline:'30 Jul 2026', status:'Closing Soon'},
-  {title:'Early Years Teacher', dept:'Early Years', campus:'Early Years Campus', type:'Full-Time', apps:16, deadline:'05 Sep 2026', status:'Published'},
-  {title:'Finance Officer', dept:'Finance & Administration', campus:'Both Campuses', type:'Full-Time', apps:7, deadline:'28 Aug 2026', status:'Published'},
-];
-
-let TALENT = [
-  {name:'Melissa Fournier', email:'melissa.fournier@email.com', role:'Secondary Science Teacher', campus:'Secondary Campus', exp:'5 yrs', joined:'2026-06-02'},
-  {name:'Bounthavy Xayavong', email:'bounthavy.x@email.com', role:'PE Teacher', campus:'Primary Campus', exp:'3 yrs', joined:'2026-06-18'},
-  {name:'James Whitfield', email:'james.whitfield@email.com', role:'Finance Officer', campus:'Both Campuses', exp:'6 yrs', joined:'2026-07-01'},
-];
-
-let INTERVIEWS = [
-  {name:'David Chen', pos:'Head of Mathematics', interviewer:'Dr. Kittisak', date:'28 Jul 2026', time:'10:00 AM', format:'On-Campus', status:'Scheduled'},
-  {name:'Sarah Mitchell', pos:'Secondary English Teacher', interviewer:'Ms. Vongsa', date:'29 Jul 2026', time:'2:00 PM', format:'Video Call', status:'Scheduled'},
-  {name:'Amara Okafor', pos:'School Counsellor', interviewer:'Mr. Bounmy', date:'25 Jul 2026', time:'11:30 AM', format:'On-Campus', status:'Completed'},
-];
-
-let TASKS = [
-  {t:'Follow up with Thomas Reed', c:'Thomas Reed', due:'Today', pri:'high', done:false},
-  {t:'Schedule interview — Sarah Mitchell', c:'Sarah Mitchell', due:'Today', pri:'high', done:false},
-  {t:'Request additional documents', c:'Priya Nair', due:'Tomorrow', pri:'med', done:false},
-  {t:'Send unsuccessful outcome email', c:'Liam Anderson', due:'Tomorrow', pri:'med', done:false},
-  {t:'Review CV backlog — Admissions', c:'—', due:'This week', pri:'low', done:false},
-];
-
+// Email templates are real configuration (not test data) — these match the automated
+// templates defined in Code.gs. Add more here as HR builds out the template library.
 let EMAILS = [
-  {n:'Application Received', trig:'On submission', updated:'2 Jul 2026'},
-  {n:'Under Review', trig:'Manual / status change', updated:'2 Jul 2026'},
-  {n:'Shortlisted', trig:'Status change', updated:'5 Jul 2026'},
-  {n:'Interview Invitation', trig:'Manual', updated:'5 Jul 2026'},
-  {n:'Successful Application', trig:'Manual', updated:'1 Jul 2026'},
-  {n:'Unsuccessful Application', trig:'Manual', updated:'1 Jul 2026'},
+  {n:'Application Received', trig:'On submission (automated)', updated:'—'},
+  {n:'Talent Pool Welcome', trig:'On submission (automated)', updated:'—'},
+  {n:'Under Review', trig:'Manual / status change', updated:'—'},
+  {n:'Shortlisted', trig:'Status change', updated:'—'},
+  {n:'Interview Invitation', trig:'Manual', updated:'—'},
+  {n:'Successful Application', trig:'Manual', updated:'—'},
+  {n:'Unsuccessful Application', trig:'Manual', updated:'—'},
 ];
 
-let TEAM = [
-  {name:'Ammy Bounmy', role:'HR Staff', assigned:24, status:'Active'},
-  {name:'Somchai Vong', role:'HR Staff', assigned:19, status:'Active'},
-  {name:'Kate Sullivan', role:'HR Manager', assigned:'—', status:'Active'},
-  {name:'IT Administrator', role:'Administrator', assigned:'—', status:'Active'},
-];
+// Team roster mirrors the real login accounts (AUTH_USERS) rather than sample names —
+// this is the actual authorized HR team, not test data.
+let TEAM = AUTH_USERS.map(u => ({ name: u.name, role: u.role, assigned: 0, status: 'Active' }));
+
+/* Computed live from CANDIDATES / JOB_ROWS / TALENT / INTERVIEWS — no hardcoded numbers. */
+function computeKpis(){
+  const byStatus = s => CANDIDATES.filter(c => c.status === s).length;
+  const openPositions = JOB_ROWS.filter(j => j.status === 'Published' || j.status === 'Closing Soon').length;
+  return [
+    {lab:'Total Applications', val: CANDIDATES.length, delta: CANDIDATES.length ? '' : 'No applications yet'},
+    {lab:'New Applications', val: byStatus('new'), delta:''},
+    {lab:'Open Positions', val: openPositions, delta: JOB_ROWS.length ? '' : 'No jobs posted yet'},
+    {lab:'Under Review', val: byStatus('review'), delta:''},
+    {lab:'Shortlisted', val: byStatus('shortlisted'), delta:''},
+    {lab:'Interviews', val: INTERVIEWS.length, delta:''},
+    {lab:'Offers', val: byStatus('offer'), delta:''},
+    {lab:'Hired', val: byStatus('hired'), delta:''},
+    {lab:'Talent Pool', val: TALENT.length, delta: TALENT.length ? '' : 'No entries yet'},
+  ];
+}
 
 const REPORTS = [
   {name:'Monthly Recruitment Summary', period:'July 2026', format:'CSV'},
@@ -674,15 +641,17 @@ function bindNav(){
 
 /* ---------------- KPIs ---------------- */
 function renderKpis(){
-  document.getElementById('kpiGrid').innerHTML = KPIS.map(k=>`
+  const kpis = computeKpis();
+  document.getElementById('kpiGrid').innerHTML = kpis.map(k=>`
     <div class="kpi-card">
       <div class="lab">${k.lab}</div>
       <div class="val" data-target="${k.val}">0</div>
-      <div class="delta ${k.up===true?'up':k.up===false?'down':''}">${k.delta}</div>
+      <div class="delta">${k.delta}</div>
     </div>
   `).join('');
   document.querySelectorAll('.kpi-card .val').forEach(el=>{
     const target = +el.dataset.target;
+    if(target === 0){ el.textContent = 0; return; }
     let cur = 0; const step = Math.max(1, Math.round(target/30));
     const t = setInterval(()=>{ cur += step; if(cur>=target){cur=target; clearInterval(t);} el.textContent = cur; }, 20);
   });
@@ -711,6 +680,7 @@ function dropCandidate(e, stage){
     cand.status = stageToStatus[stage] || cand.status;
     renderPipeline();
     renderApplications();
+    renderKpis();
     showToast(`${cand.name} moved to ${stage}`);
     // In production: PATCH to backend -> update DB + Google Sheet + audit log
   }
@@ -758,7 +728,7 @@ function renderJobs(){
     <tr><td style="font-weight:700; color:var(--forest);">${j.title}</td><td>${j.dept}</td><td>${j.campus}</td><td>${j.type}</td><td>${j.apps}</td><td>${j.deadline}</td>
     <td><span class="badge ${j.status==='Closing Soon'?'interview':j.status==='Draft'?'review':'new'}">${j.status}</span></td>
     <td style="white-space:nowrap;"><button class="btn small" onclick="editJob(${i})">Edit</button> <button class="btn small" onclick="emailJobApplicants(${i})">Email Applicants</button></td></tr>
-  `).join('');
+  `).join('') || `<tr><td colspan="8" class="empty-note">No job openings yet — click "+ New Job Opening" to add one.</td></tr>`;
 }
 function editJob(index){
   const job = index != null ? JOB_ROWS[index] : null;
@@ -796,7 +766,7 @@ function openJobModal(job, index){
       deadline: document.getElementById('jmDeadline').value, apps: job ? job.apps : 0
     };
     if(isEdit){ JOB_ROWS[index] = record; showToast(`${title} updated`); }
-    else { JOB_ROWS.unshift(record); showToast(`${title} created`); KPIS.find(k=>k.lab==='Open Positions').val++; renderKpis(); }
+    else { JOB_ROWS.unshift(record); showToast(`${title} created`); renderKpis(); }
     renderJobs();
   }, isEdit ? 'Save Changes' : 'Create Job');
 }
@@ -806,7 +776,7 @@ function renderTalent(){
   document.getElementById('talentBody').innerHTML = TALENT.map((t,i)=>`
     <tr><td><span class="avatar">${initials(t.name)}</span>${t.name}</td><td>${t.role}</td><td>${t.campus}</td><td>${t.exp}</td><td>${formatDate(t.joined)}</td>
     <td><button class="btn small" onclick="viewTalent(${i})">View</button></td></tr>
-  `).join('');
+  `).join('') || `<tr><td colspan="6" class="empty-note">No one in the Talent Pool yet.</td></tr>`;
 }
 function viewTalent(i){
   const t = TALENT[i];
@@ -826,7 +796,7 @@ function moveTalentToApplication(i){
   const t = TALENT[i];
   CANDIDATES.unshift({name:t.name, email:t.email, pos:t.role, campus:t.campus, applied:new Date().toISOString().slice(0,10), exp:t.exp, status:'new', hr:'Unassigned', next:'Assign HR'});
   TALENT.splice(i,1);
-  renderTalent(); renderApplications(); renderPipeline(); populateApplicationFilters();
+  renderTalent(); renderApplications(); renderPipeline(); populateApplicationFilters(); renderKpis();
   closeCandidate();
   showToast(`${t.name} moved into Applications`);
 }
@@ -839,6 +809,7 @@ function renderInterviews(){
   `).join('') || `<tr><td colspan="7" class="empty-note">No interviews scheduled.</td></tr>`;
 }
 function openInterviewModal(){
+  if(!CANDIDATES.length){ showToast('No candidates yet to schedule an interview with'); return; }
   const candOptions = CANDIDATES.map(c=>`<option>${c.name}</option>`).join('');
   const body = `
     <div class="mfield"><label>Candidate</label><select id="imCand">${candOptions}</select></div>
@@ -860,7 +831,7 @@ function openInterviewModal(){
       format: document.getElementById('imFormat').value, status: 'Scheduled'
     });
     if(cand){ cand.status = 'interview'; cand.next = 'Awaiting interview'; }
-    renderInterviews(); renderApplications(); renderPipeline();
+    renderInterviews(); renderApplications(); renderPipeline(); renderKpis();
     showToast(`Interview scheduled with ${name}`);
   }, 'Schedule Interview');
 }
@@ -990,7 +961,7 @@ function exportTalentCSV(){
 }
 function exportAnalyticsCSV(){
   const rows = [['Metric','Value']];
-  KPIS.forEach(k=> rows.push([k.lab, k.val]));
+  computeKpis().forEach(k=> rows.push([k.lab, k.val]));
   downloadCSV(rows.map(r=>r.join(',')).join('\n'), 'pbis_analytics_summary.csv');
   showToast('Analytics report exported');
 }
@@ -1050,7 +1021,7 @@ function applyStatusChange(name){
     `Move <b>${name}</b> from <b>${fromLabel}</b> to <b>${toLabel}</b>? This updates their record immediately and is visible to the whole HR team.`,
     () => {
       c.status = val; c.next = 'Updated';
-      renderApplications(); renderPipeline();
+      renderApplications(); renderPipeline(); renderKpis();
       showToast(`${name}'s status updated to ${toLabel}`);
     },
     { title: 'Confirm Status Change', confirmLabel: 'Update Status' }
@@ -1182,7 +1153,44 @@ function chartFallback(canvasId, msg){
   box.appendChild(div);
 }
 
+function last7DaysSeries_(){
+  const labels = [], counts = [];
+  for(let i=6;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    labels.push(d.toLocaleDateString('en-GB',{day:'numeric',month:'short'}));
+    const iso = d.toISOString().slice(0,10);
+    counts.push(CANDIDATES.filter(c=>c.applied===iso).length);
+  }
+  return {labels, counts};
+}
+function departmentBreakdown_(){
+  const deptByJobTitle = {};
+  JOB_ROWS.forEach(j => { deptByJobTitle[j.title] = j.dept; });
+  const counts = {};
+  CANDIDATES.forEach(c => {
+    const dept = deptByJobTitle[c.pos] || 'Other';
+    counts[dept] = (counts[dept] || 0) + 1;
+  });
+  const labels = Object.keys(counts);
+  return { labels, data: labels.map(l => counts[l]) };
+}
+function funnelBreakdown_(){
+  return STAGES.map(s => CANDIDATES.filter(c => statusToStage[c.status] === s).length);
+}
+function renderAnalyticsCards_(){
+  const hired = CANDIDATES.filter(c=>c.status==='hired').length;
+  const offeredOrHired = CANDIDATES.filter(c=>c.status==='offer' || c.status==='hired').length;
+  const interviewToHire = INTERVIEWS.length ? Math.round((hired/INTERVIEWS.length)*100) + '%' : '—';
+  const offerAcceptance = offeredOrHired ? Math.round((hired/offeredOrHired)*100) + '%' : '—';
+  const el = id => document.getElementById(id);
+  if(el('acAvgTimeToHire')) el('acAvgTimeToHire').textContent = '—';
+  if(el('acInterviewToHire')) el('acInterviewToHire').textContent = interviewToHire;
+  if(el('acOfferAcceptance')) el('acOfferAcceptance').textContent = offerAcceptance;
+  if(el('acTalentGrowth')) el('acTalentGrowth').textContent = '—';
+}
+
 function initCharts(){
+  renderAnalyticsCards_();
   if(typeof Chart === 'undefined'){
     ['chartApplications','chartDept','chartSource','chartFunnel'].forEach(id => chartFallback(id, 'Chart library failed to load — check your network connection or ad-blocker, then refresh.'));
     return;
@@ -1191,36 +1199,38 @@ function initCharts(){
     Chart.defaults.font.family = 'Manrope';
     Chart.defaults.color = '#6b665c';
 
+    const apps = last7DaysSeries_();
     new Chart(document.getElementById('chartApplications'), {
       type:'line',
-      data:{ labels:['Jun 24','Jun 29','Jul 4','Jul 9','Jul 14','Jul 19','Jul 24'],
-        datasets:[{ label:'Applications', data:[12,19,14,27,22,31,26], borderColor:'#B68A4E', backgroundColor:'rgba(182,138,78,0.12)', fill:true, tension:.4, pointRadius:3 }]},
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true, grid:{color:'#EFE9DB'}}, x:{grid:{display:false}} } }
+      data:{ labels: apps.labels,
+        datasets:[{ label:'Applications', data: apps.counts, borderColor:'#B68A4E', backgroundColor:'rgba(182,138,78,0.12)', fill:true, tension:.4, pointRadius:3 }]},
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{beginAtZero:true, grid:{color:'#EFE9DB'}, ticks:{precision:0}}, x:{grid:{display:false}} } }
     });
 
-    new Chart(document.getElementById('chartDept'), {
-      type:'bar',
-      data:{ labels:['Secondary Academic','Primary Academic','Pastoral & Wellbeing','Operations & IT','Admissions & Marketing'],
-        datasets:[{ data:[74,52,22,11,9], backgroundColor:'#16302A', borderRadius:4 }]},
-      options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#EFE9DB'}}, y:{grid:{display:false}}} }
-    });
+    const dept = departmentBreakdown_();
+    if(dept.labels.length){
+      new Chart(document.getElementById('chartDept'), {
+        type:'bar',
+        data:{ labels: dept.labels, datasets:[{ data: dept.data, backgroundColor:'#16302A', borderRadius:4 }]},
+        options:{ responsive:true, maintainAspectRatio:false, indexAxis:'y', plugins:{legend:{display:false}}, scales:{x:{grid:{color:'#EFE9DB'}, ticks:{precision:0}}, y:{grid:{display:false}}} }
+      });
+    } else {
+      chartFallback('chartDept', 'No applications yet — this fills in once candidates start applying to your job openings.');
+    }
 
-    new Chart(document.getElementById('chartSource'), {
-      type:'doughnut',
-      data:{ labels:['PBIS Careers','LinkedIn','Facebook','Referral','Job Boards','Other'],
-        datasets:[{ data:[38,26,14,12,7,3], backgroundColor:['#16302A','#B68A4E','#24443A','#D9BD8C','#8a8578','#E7E1D3'] }]},
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'bottom', labels:{boxWidth:10, padding:14, font:{size:11}}}} }
-    });
+    // Recruitment source isn't captured anywhere in the data model yet (no UTM/source
+    // field on Application). Rather than show invented numbers, this is left as an
+    // honest empty state until source tracking is wired up on the application form.
+    chartFallback('chartSource', 'Recruitment source tracking isn\\'t wired to real data yet — add a "source" field to captured applications to populate this.');
 
     new Chart(document.getElementById('chartFunnel'), {
       type:'bar',
-      data:{ labels:['Applications','Under Review','Shortlisted','Interview','Offer','Hired'],
-        datasets:[{ data:[214,142,68,34,12,9], backgroundColor:'#B68A4E', borderRadius:4 }]},
-      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, grid:{color:'#EFE9DB'}}, x:{grid:{display:false}}} }
+      data:{ labels: STAGES, datasets:[{ data: funnelBreakdown_(), backgroundColor:'#B68A4E', borderRadius:4 }]},
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, grid:{color:'#EFE9DB'}, ticks:{precision:0}}, x:{grid:{display:false}}} }
     });
   } catch(err){
     console.error('Chart init failed:', err);
-    ['chartApplications','chartDept','chartSource','chartFunnel'].forEach(id => chartFallback(id, 'Unable to render this chart right now.'));
+    ['chartApplications','chartDept','chartFunnel'].forEach(id => chartFallback(id, 'Unable to render this chart right now.'));
   }
 }
 </script>
