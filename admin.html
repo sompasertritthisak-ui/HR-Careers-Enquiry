@@ -402,21 +402,14 @@ tr[tabindex]:focus-visible, .pl-card:focus-visible{outline:2px solid var(--gold)
 <script>
 /* ================= AUTH ================= */
 // Same permission level for every account — title/name is the only difference.
-// These are intentionally simple client-side passcodes for an internal prototype;
-// treat them as a door lock, not a vault, and rotate them if this ever handles
-// real candidate PII in production.
-// Passcodes are never stored in plaintext — only their SHA-256 hash appears in
-// source, so viewing this file (public repo, view-source, etc.) shows scribble,
-// not the real credential. The entered passcode is hashed client-side with the
-// Web Crypto API and compared to the hash below; the real value never touches
-// the page's HTML/JS as text at any point.
-const AUTH_USERS = [
-  { loginId: 'tookta.manager', name: 'Ms. Tookta', role: 'HR Manager', passcodeHash: '466f551894ca352dec3260214813cd950d8a583a86b074d1ea28869be492fb41' },
-  { loginId: 'tam.hr',          name: 'Tam',         role: 'HR Staff',   passcodeHash: '21ab347518fc8f799076e245eb900f186c926d09426ecb13099c052979cdce37' },
-  { loginId: 'linda.hr',        name: 'Linda',       role: 'HR Staff',   passcodeHash: '5db25384aed79bb36afd5a3342c24e898ca1936fa689f6056d2c693831ccd329' },
-  { loginId: 'bo.hr',           name: 'Bo',          role: 'HR Staff',   passcodeHash: '7b482f950a0c820be826aa14b7e98149b922c73ac7a8e8363d599d0cee6f8a04' },
-];
-
+// Authentication is verified SERVER-SIDE in Code.gs (see apiLogin / AUTH_USERS
+// there). This page only hashes the entered passcode client-side (so the raw
+// value never crosses the network) and sends {loginId, passcodeHash} to the
+// server, which returns a session token used for every sensitive action
+// afterward (like sending email). Nothing here grants access on its own —
+// google.script.run exposes every server function to any browser with this
+// page open, so the server-side check in Code.gs is the real boundary, not
+// this login screen.
 async function sha256Hex(text){
   const enc = new TextEncoder().encode(text);
   const digest = await crypto.subtle.digest('SHA-256', enc);
@@ -431,6 +424,14 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw3SNY81Ga5AK1X
 const IS_EMBEDDED = typeof google !== 'undefined' && !!google.script && !!google.script.run;
 
 const API = {
+  login(loginId, passcodeHash){
+    if(IS_EMBEDDED){
+      return new Promise((resolve,reject)=> google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).apiLogin(loginId, passcodeHash));
+    }
+    return fetch(`${APPS_SCRIPT_URL}?path=login`, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({loginId, passcodeHash})
+    }).then(r=>r.json());
+  },
   sendEmail(payload){
     if(IS_EMBEDDED){
       return new Promise((resolve,reject)=> google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).apiSendEmail(payload));
@@ -449,20 +450,25 @@ function initLogin(){
   loginLogoImg.src = LOGO_LARGE;
   sidebarLogoImg.src = LOGO_SMALL;
 
-  const restored = sessionStorage.getItem('pbisCurrentUser');
+  const restored = sessionStorage.getItem('pbisSession');
   if(restored){
-    const u = AUTH_USERS.find(x => x.loginId === restored);
-    if(u){ signIn(u, true); return; }
+    try {
+      const session = JSON.parse(restored);
+      if(session && session.token){ signIn(session, true); return; }
+    } catch(e){ sessionStorage.removeItem('pbisSession'); }
   }
 
   document.getElementById('loginForm').addEventListener('submit', async e => {
     e.preventDefault();
-    const enteredId = document.getElementById('loginUserId').value.trim().toLowerCase();
+    const loginId = document.getElementById('loginUserId').value.trim().toLowerCase();
     const pass = document.getElementById('loginPass').value;
-    const user = AUTH_USERS.find(u => u.loginId.toLowerCase() === enteredId);
     const err = document.getElementById('loginError');
-    if(!user){ err.textContent = 'Incorrect Login ID or passcode. Please try again.'; err.style.display = 'block'; return; }
 
+    if(!loginId || !pass){
+      err.textContent = 'Enter both your Login ID and passcode.';
+      err.style.display = 'block';
+      return;
+    }
     if(!window.crypto || !window.crypto.subtle){
       // Web Crypto requires a secure context (HTTPS or localhost). Flag it clearly
       // rather than silently failing — this only happens if the file is opened as
@@ -472,30 +478,45 @@ function initLogin(){
       return;
     }
 
-    const enteredHash = await sha256Hex(pass);
-    if(enteredHash !== user.passcodeHash){
-      err.textContent = 'Incorrect name or passcode. Please try again.';
+    const submitBtn = document.querySelector('#loginForm .login-submit');
+    if(submitBtn){ submitBtn.disabled = true; submitBtn.textContent = 'Signing in…'; }
+
+    const passcodeHash = await sha256Hex(pass);
+    let result = null;
+    try {
+      result = await API.login(loginId, passcodeHash);
+    } catch(networkErr) {
+      result = { error: 'network_error' };
+    }
+
+    if(submitBtn){ submitBtn.disabled = false; submitBtn.textContent = 'Sign In'; }
+
+    if(!result || result.error){
+      err.textContent = result && result.error === 'network_error'
+        ? 'Could not reach the server. Check your connection and try again.'
+        : 'Incorrect Login ID or passcode. Please try again.';
       err.style.display = 'block';
       return;
     }
+
     err.style.display = 'none';
-    signIn(user, false);
+    signIn({ loginId, name: result.name, role: result.role, token: result.token }, false);
   });
 }
 
-function signIn(user, restoredSession){
-  currentUser = user;
-  sessionStorage.setItem('pbisCurrentUser', user.loginId);
+function signIn(session, restoredSession){
+  currentUser = session;
+  sessionStorage.setItem('pbisSession', JSON.stringify(session));
   document.getElementById('loginGate').style.display = 'none';
-  document.getElementById('sidebarWho').textContent = `${user.name} · ${user.role}`;
-  accessLog.unshift({ user: user.name, role: user.role, event: restoredSession ? 'Session resumed' : 'Signed in', time: new Date().toLocaleString('en-GB') });
+  document.getElementById('sidebarWho').textContent = `${session.name} · ${session.role}`;
+  accessLog.unshift({ user: session.name, role: session.role, event: restoredSession ? 'Session resumed' : 'Signed in', time: new Date().toLocaleString('en-GB') });
   renderAccessLog();
   initDashboard();
 }
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
   accessLog.unshift({ user: currentUser.name, role: currentUser.role, event: 'Signed out', time: new Date().toLocaleString('en-GB') });
-  sessionStorage.removeItem('pbisCurrentUser');
+  sessionStorage.removeItem('pbisSession');
   location.reload();
 });
 
@@ -569,9 +590,14 @@ let EMAILS = [
   {n:'Unsuccessful Application', trig:'Manual', updated:'—'},
 ];
 
-// Team roster mirrors the real login accounts (AUTH_USERS) rather than sample names —
-// this is the actual authorized HR team, not test data.
-let TEAM = AUTH_USERS.map(u => ({ name: u.name, role: u.role, assigned: 0, status: 'Active' }));
+// Team roster mirrors the real login accounts (names/roles only — the actual
+// credentials live server-side in Code.gs, never in this file).
+let TEAM = [
+  { name: 'Ms. Tookta', role: 'HR Manager', assigned: 0, status: 'Active' },
+  { name: 'Tam',         role: 'HR Staff',   assigned: 0, status: 'Active' },
+  { name: 'Linda',       role: 'HR Staff',   assigned: 0, status: 'Active' },
+  { name: 'Bo',          role: 'HR Staff',   assigned: 0, status: 'Active' },
+];
 
 /* Computed live from CANDIDATES / JOB_ROWS / TALENT / INTERVIEWS — no hardcoded numbers. */
 function computeKpis(){
@@ -1083,7 +1109,13 @@ async function dispatchEmails(recipients, subject, message){
   for(const r of recipients){
     const personalized = message.replace(/\{name\}/g, r.name);
     try{
-      const result = await API.sendEmail({ to: r.email, subject, body: personalized, sentBy: currentUser.name });
+      const result = await API.sendEmail({ to: r.email, subject, body: personalized, sentBy: currentUser.name, token: currentUser.token });
+      if(result && result.error === 'unauthorized'){
+        showToast('Your session has expired — please sign in again.');
+        sessionStorage.removeItem('pbisSession');
+        location.reload();
+        return;
+      }
       if(result && result.error){
         failed++;
         accessLog.unshift({ user: currentUser.name, role: currentUser.role, event: `Failed to send to ${r.name} (${r.email}): ${result.message || result.error}`, time: new Date().toLocaleString('en-GB') });
@@ -1221,7 +1253,7 @@ function initCharts(){
     // Recruitment source isn't captured anywhere in the data model yet (no UTM/source
     // field on Application). Rather than show invented numbers, this is left as an
     // honest empty state until source tracking is wired up on the application form.
-    chartFallback('chartSource', 'Recruitment source tracking isn\\'t wired to real data yet — add a "source" field to captured applications to populate this.');
+    chartFallback('chartSource', 'Recruitment source tracking isn\'t wired to real data yet — add a "source" field to captured applications to populate this.');
 
     new Chart(document.getElementById('chartFunnel'), {
       type:'bar',
