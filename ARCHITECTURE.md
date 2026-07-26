@@ -91,9 +91,69 @@ not a rebuild.
 
 ## 7. Security & privacy notes
 
+### What's enforced automatically (as of this hardening pass)
+
+- **Server-side authentication.** `admin.html`'s login screen is a UI convenience,
+  not the real security boundary — `google.script.run` exposes every function in
+  `Code.gs` to any browser that has a page open, regardless of what the UI shows.
+  The actual authorization check now lives in `Code.gs`: `apiLogin()` verifies
+  the loginId + hashed passcode against the server-side `AUTH_USERS` roster and
+  issues a short-lived session token (6h TTL, via `CacheService`). Every
+  sensitive action (currently: sending email) requires that token and is
+  rejected server-side if it's missing, invalid, or expired — even if someone
+  bypasses the login screen entirely via devtools.
+- **Sheet formula-injection protection.** Every user-submitted string field is
+  sanitized before being written to a Sheet cell (`sanitizeForSheet_`). Without
+  this, a candidate could submit a "name" like `=IMPORTXML(...)` that executes
+  as a formula when HR opens the spreadsheet.
+- **Server-side file validation.** CV uploads are re-validated on the server
+  (file extension allowlist, 10MB size cap) — the client-side checks in
+  `index.html` are for UX, not security, since they're trivially bypassable by
+  calling the API directly.
+- **Honeypot spam guard + duplicate-submission guards** on both public forms
+  (Applications, Talent Pool) — bots seeing a fake "success" response with
+  nothing actually written, and repeat submissions from the same email
+  deduplicated rather than creating duplicate records.
+- **Generic error responses.** Server exceptions are logged via `console.error`
+  (visible only in the Apps Script execution log) and never echoed back to the
+  client — avoids leaking sheet names, stack traces, or other internals to
+  anyone probing the API.
+- **Drive folders and files are private by default**, set explicitly at
+  creation time (defense in depth — both the folder and each file get their
+  own `setSharing(PRIVATE, NONE)` call).
 - Candidate data is never publicly queryable; the tracker endpoint returns
-  status only, never HR notes.
+  status only, never HR notes or internal fields.
+
+### What still needs a human to configure (can't be enforced in code)
+
+- **Google Sheet sharing.** Open the Sheet's Share settings and confirm it's
+  restricted to specific PBIS staff Google accounts — not "Anyone with the
+  link." The deployment ID and Sheet ID living in this codebase (especially if
+  the repo is public) means the URL alone shouldn't be treated as a secret;
+  the Sheet's own permissions are the real gate.
+- **Consider a Google Workspace-restricted deployment for `?page=admin`** if
+  PBIS uses Google Workspace. Apps Script's "Anyone" access level applies to
+  the whole deployment (can't be restricted per-page), so `index.html` (needs
+  to stay public for candidates) and `admin.html` currently share one
+  deployment's access level. A cleaner long-term setup is two separate Apps
+  Script deployments — one public (candidate-facing), one restricted to your
+  Workspace domain (HR-facing) — so the platform-level access control matches
+  the session-token control already in place.
+- **Rotate the 4 admin passcodes periodically**, and immediately if anyone
+  who had one leaves the team — there's no per-user revocation short of
+  changing the hash in `Code.gs`.
+- **CORS caveat for non-embedded mode:** if `admin.html` is hosted outside
+  Apps Script (not via `?page=admin`), a failed `fetch()` response can't always
+  be distinguished from a successful-but-unreadable one due to missing CORS
+  headers — the frontend optimistically reports "sent" in that case. This
+  doesn't weaken the server-side auth check itself, only the confidence of the
+  success message; serving `admin.html` via `?page=admin` (the recommended
+  setup) avoids the ambiguity entirely via `google.script.run`.
+
+### Original notes (still true)
+
 - Consent text and checkbox are required on both the multi-step application
   and the Talent Community form (§39 of the brief).
-- Rate limiting + duplicate-submission detection belong in `Code.gs`
-  (check by email + jobId before creating a new Application row).
+- Rate limiting is bounded by Apps Script's own daily quotas (`MailApp` sends,
+  execution time); there's no per-IP throttling since Apps Script web apps
+  don't expose caller IP to `doGet`/`doPost`.
