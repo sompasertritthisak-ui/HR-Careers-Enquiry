@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PBIS Careers Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.4/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.0/chart.umd.min.js"></script>
 <link id="favicon" rel="icon" type="image/png" href="">
 <style>
 :root{
@@ -455,6 +455,12 @@ const API = {
     return fetch(`${APPS_SCRIPT_URL}?path=update-job`, {
       method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)
     }).then(r=>r.json());
+  },
+  listJobs(){
+    if(IS_EMBEDDED){
+      return new Promise((resolve)=> google.script.run.withSuccessHandler(resolve).withFailureHandler(()=>resolve(null)).apiListAllJobsForAdmin());
+    }
+    return fetch(`${APPS_SCRIPT_URL}?path=admin-jobs`).then(r=>r.json()).catch(()=>null);
   }
 };
 
@@ -642,6 +648,31 @@ const STAGES = ['New','Under Review','Shortlisted','Interview','Offer','Hired'];
 const statusToStage = {new:'New', review:'Under Review', shortlisted:'Shortlisted', interview:'Interview', offer:'Offer', hired:'Hired', rejected:'New'};
 const stageToStatus = Object.fromEntries(Object.entries(statusToStage).map(([k,v])=>[v,k]));
 
+function normalizeAdminJob(j){
+  return {
+    jobId: j['Job ID'], title: j['Job Title'], dept: j['Department'], campus: j['Campus'],
+    type: j['Employment Type'], status: j['Status'], experience: j['Experience Level'],
+    deadline: j['Application Deadline'], salary: j['Salary Range'],
+    description: j['Description'], responsibilities: j['Responsibilities'],
+    requirements: j['Requirements'], qualifications: j['Qualifications'],
+    apps: 0 // per-job application counts aren't tracked yet — always 0 until wired to the Applications sheet
+  };
+}
+
+async function loadJobsFromSheet(){
+  let live = null;
+  try { live = await API.listJobs(); } catch(err){ live = null; }
+  if(live && Array.isArray(live) && live.length){
+    JOB_ROWS.length = 0;
+    live.forEach(j => JOB_ROWS.push(normalizeAdminJob(j)));
+    renderJobs();
+    renderKpis();
+  }
+  // If this fails (e.g. CORS in standalone mode, or the Sheet is genuinely empty),
+  // JOB_ROWS just stays as whatever was already loaded locally this session —
+  // never wipes what's on screen.
+}
+
 /* ================= DASHBOARD INIT (runs after sign-in) ================= */
 function initDashboard(){
   bindNav();
@@ -658,6 +689,7 @@ function initDashboard(){
   renderReports();
   bindActionButtons();
   initCharts();
+  loadJobsFromSheet();
 }
 
 /* ---------------- NAV ---------------- */
@@ -830,11 +862,16 @@ function openJobModal(job, index){
 async function saveJob(record, isEdit, index){
   const payload = { ...record, token: currentUser.token };
   let result = null;
+  let unconfirmed = false;
   try {
     result = isEdit ? await API.updateJob(payload) : await API.createJob(payload);
   } catch(err){
-    showToast('Could not reach the server — the job was not saved. Please try again.');
-    return;
+    // Standalone (non-embedded) mode: Apps Script doesn't return CORS headers, so the
+    // browser can block reading the response even though the write already succeeded
+    // server-side. Treat this as unconfirmed rather than a hard failure — see
+    // ARCHITECTURE.md. Serving this page via Apps Script at ?page=admin avoids this
+    // ambiguity entirely (uses google.script.run, no CORS involved).
+    unconfirmed = true;
   }
 
   if(result && result.error === 'unauthorized'){
@@ -843,18 +880,18 @@ async function saveJob(record, isEdit, index){
     location.reload();
     return;
   }
-  if(!result || result.error){
+  if(!unconfirmed && (!result || result.error)){
     showToast(`Could not save "${record.title}" — ${result && result.message ? result.message : 'please try again'}`);
     return;
   }
 
   if(isEdit){
     JOB_ROWS[index] = record;
-    showToast(`${record.title} updated`);
+    showToast(unconfirmed ? `${record.title} saved — delivery unconfirmed (see note)` : `${record.title} updated`);
   } else {
-    record.jobId = result.jobId;
+    record.jobId = (result && result.jobId) || record.jobId || ('LOCAL-' + Date.now());
     JOB_ROWS.unshift(record);
-    showToast(`${record.title} created — now live on PBIS Careers`);
+    showToast(unconfirmed ? `${record.title} created — delivery unconfirmed (see note)` : `${record.title} created — now live on PBIS Careers`);
     renderKpis();
   }
   renderJobs();
