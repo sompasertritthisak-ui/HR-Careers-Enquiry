@@ -439,6 +439,22 @@ const API = {
     return fetch(`${APPS_SCRIPT_URL}?path=send-email`, {
       method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)
     }).then(r=>r.json());
+  },
+  createJob(payload){
+    if(IS_EMBEDDED){
+      return new Promise((resolve,reject)=> google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).apiCreateJob(payload));
+    }
+    return fetch(`${APPS_SCRIPT_URL}?path=create-job`, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)
+    }).then(r=>r.json());
+  },
+  updateJob(payload){
+    if(IS_EMBEDDED){
+      return new Promise((resolve,reject)=> google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).apiUpdateJob(payload));
+    }
+    return fetch(`${APPS_SCRIPT_URL}?path=update-job`, {
+      method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify(payload)
+    }).then(r=>r.json());
   }
 };
 
@@ -781,20 +797,67 @@ function openJobModal(job, index){
         </select>
       </div>
     </div>
-    <div class="mfield"><label>Application Deadline</label><input id="jmDeadline" placeholder="e.g. 30 Aug 2026" value="${job?job.deadline:''}"></div>
+    <div class="mfield-row">
+      <div class="mfield"><label>Experience Level</label><input id="jmExperience" placeholder="e.g. 2+ years" value="${job?job.experience||'':''}"></div>
+      <div class="mfield"><label>Application Deadline</label><input id="jmDeadline" placeholder="e.g. 30 Aug 2026" value="${job?job.deadline:''}"></div>
+    </div>
+    <div class="mfield"><label>Salary Range (optional)</label><input id="jmSalary" placeholder="Leave blank if not disclosed" value="${job?job.salary||'':''}"></div>
+    <div class="mfield"><label>About the Role</label><textarea id="jmDescription" rows="3" placeholder="A short summary shown at the top of the job page">${job?job.description||'':''}</textarea></div>
+    <div class="mfield"><label>Key Responsibilities <span style="text-transform:none; font-weight:400;">(one per line)</span></label><textarea id="jmResponsibilities" rows="3">${job?job.responsibilities||'':''}</textarea></div>
+    <div class="mfield"><label>Requirements <span style="text-transform:none; font-weight:400;">(one per line)</span></label><textarea id="jmRequirements" rows="3">${job?job.requirements||'':''}</textarea></div>
+    <div class="mfield"><label>Qualifications <span style="text-transform:none; font-weight:400;">(one per line)</span></label><textarea id="jmQualifications" rows="2">${job?job.qualifications||'':''}</textarea></div>
   `;
   openModal(isEdit ? 'Edit Job Opening' : 'New Job Opening', body, () => {
     const title = document.getElementById('jmTitle').value.trim();
     if(!title){ showToast('Job title is required'); return false; }
     const record = {
+      jobId: job ? job.jobId : undefined,
       title, dept: document.getElementById('jmDept').value, campus: document.getElementById('jmCampus').value,
       type: document.getElementById('jmType').value, status: document.getElementById('jmStatus').value,
-      deadline: document.getElementById('jmDeadline').value, apps: job ? job.apps : 0
+      experience: document.getElementById('jmExperience').value,
+      deadline: document.getElementById('jmDeadline').value, salary: document.getElementById('jmSalary').value,
+      description: document.getElementById('jmDescription').value,
+      responsibilities: document.getElementById('jmResponsibilities').value,
+      requirements: document.getElementById('jmRequirements').value,
+      qualifications: document.getElementById('jmQualifications').value,
+      apps: job ? job.apps : 0
     };
-    if(isEdit){ JOB_ROWS[index] = record; showToast(`${title} updated`); }
-    else { JOB_ROWS.unshift(record); showToast(`${title} created`); renderKpis(); }
-    renderJobs();
+    saveJob(record, isEdit, index);
+    // Modal closes immediately (optimistic); saveJob() reports success/failure via toast.
   }, isEdit ? 'Save Changes' : 'Create Job');
+}
+
+async function saveJob(record, isEdit, index){
+  const payload = { ...record, token: currentUser.token };
+  let result = null;
+  try {
+    result = isEdit ? await API.updateJob(payload) : await API.createJob(payload);
+  } catch(err){
+    showToast('Could not reach the server — the job was not saved. Please try again.');
+    return;
+  }
+
+  if(result && result.error === 'unauthorized'){
+    showToast('Your session has expired — please sign in again.');
+    sessionStorage.removeItem('pbisSession');
+    location.reload();
+    return;
+  }
+  if(!result || result.error){
+    showToast(`Could not save "${record.title}" — ${result && result.message ? result.message : 'please try again'}`);
+    return;
+  }
+
+  if(isEdit){
+    JOB_ROWS[index] = record;
+    showToast(`${record.title} updated`);
+  } else {
+    record.jobId = result.jobId;
+    JOB_ROWS.unshift(record);
+    showToast(`${record.title} created — now live on PBIS Careers`);
+    renderKpis();
+  }
+  renderJobs();
 }
 
 /* ---------------- TALENT POOL ---------------- */
