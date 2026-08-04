@@ -931,17 +931,53 @@ function fileToBase64(file){
 
 /* ---------------- INIT ---------------- */
 document.addEventListener('DOMContentLoaded', () => {
+  // Core functionality FIRST, unconditionally — search, filters, forms, file
+  // uploads, and live job loading must work even if a CDN script (GSAP) fails
+  // to load, e.g. due to an ad-blocker, a slow connection, or a network that
+  // blocks cdnjs.cloudflare.com. Previously these ran after the GSAP-dependent
+  // calls below, so a single failed script tag silently broke every button,
+  // form, and file upload on the page.
   populateFilters();
   renderJobs();
-  animateCounters();
-  initGSAP();
-  initCustomCursor();
-  initDayInLife();
-  initMatchQuiz();
-  initLanguageToggle();
   bindEvents();
   loadLiveJobs();
+
+  // Decorative/animation enhancements — each wrapped independently so one
+  // failure can't take down the others, and can never take down the core
+  // functionality above (which has already run by this point regardless).
+  try { animateCounters(); } catch(e){ console.error('animateCounters failed:', e); setStatsInstantly(); }
+  try { initGSAP(); } catch(e){ console.error('initGSAP failed — falling back to static layout:', e); revealAllInstantly(); }
+  try { initCustomCursor(); } catch(e){ console.error('initCustomCursor failed:', e); }
+  try { initDayInLife(); } catch(e){ console.error('initDayInLife failed:', e); }
+  try { initMatchQuiz(); } catch(e){ console.error('initMatchQuiz failed:', e); }
+  try { initLanguageToggle(); } catch(e){ console.error('initLanguageToggle failed:', e); }
 });
+
+function setStatsInstantly(){
+  // Fallback for animateCounters() when GSAP isn't available — same end state, no animation.
+  const open = JOBS.length;
+  const depts = new Set(JOBS.map(j=>j.dept)).size;
+  if(document.getElementById('statOpen')) statOpen.textContent = open;
+  if(document.getElementById('heroOppCount')) heroOppCount.childNodes[0].textContent = open;
+  if(document.getElementById('statDept')) statDept.textContent = depts;
+}
+
+function revealAllInstantly(){
+  // Fallback for initGSAP() — every `.reveal` element starts at opacity:0 in CSS,
+  // waiting for a GSAP ScrollTrigger animation to reveal it. If GSAP never loads,
+  // that animation never fires and the content stays invisible forever. This
+  // makes sure the page is fully visible and usable even with zero animation.
+  document.querySelectorAll('.reveal').forEach(el => {
+    el.style.opacity = '1';
+    el.style.transform = 'none';
+  });
+  document.querySelectorAll('.hero h1 .line span').forEach(el => { el.style.transform = 'translateY(0)'; });
+  // Nav bar still needs its "scrolled" (light) background once the visitor scrolls,
+  // even without ScrollTrigger driving it.
+  window.addEventListener('scroll', () => {
+    siteNav.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+}
 
 /* ---------------- LANGUAGE TOGGLE (EN / Lao) ----------------
    NOTE: the Lao strings below are a best-effort starting point, not a verified
